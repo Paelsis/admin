@@ -7,6 +7,7 @@ const styles = {
     },
 }
 
+
 export default ({cols, list, buttons}) => {
     const colons = cols?cols:list.length > 0?Object.keys(list[0]).filter(key=>isNormalVariable(list[0][key])):[]
     return(

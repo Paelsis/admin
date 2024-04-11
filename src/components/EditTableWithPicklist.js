@@ -43,7 +43,7 @@ const Column = ({noLabel, col, value, setValue, style}) => {
                 <>
                 <textarea 
                     {...defaultArguments}
-                    cols={col.cols?col.cols:20} 
+                    cols={col.cols?col.cols:30} 
                     rows={1} 
                     onChange={handleChange}
                     style={style?style:{}}
@@ -159,7 +159,7 @@ const AddRow = ({noLabel, columns, list, setList}) => {
  const ViewRow = ({columns, row, toggleEdit, copyRow, deleteRow}) => 
     <tr>
     {columns.map(col=>
-        <td>{row[col.name]}</td>
+        <td style={{maxWidth:80}}>{row[col.name]}</td>
     )}
     <td>
         <IconButton onClick={toggleEdit}>
