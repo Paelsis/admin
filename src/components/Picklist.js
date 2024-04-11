@@ -61,7 +61,7 @@ export default ({labelButton, tableName, labelName, valueName, value, handleClic
   )
 }
 
-export const Select =  ({tableName, name, selectLabel, selectValue, value, handleClick, unique}) => {
+export const Select =  ({tableName, name, selectLabel, selectValue, value, handleClick, unique, style}) => {
     const [list, setList] = useState([])
     const [active, setActive] = useState(false)
 
@@ -81,17 +81,17 @@ export const Select =  ({tableName, name, selectLabel, selectValue, value, handl
 
     const onClick = (e, val) => {
         e.preventDefault()
-        alert(val)
+        // alert(val)
         handleClick(val)
     }
     
     return(
         <>
             <div className={active?"select is-active":"select"}>
-            <select name={name} value={value?value:''} onClick={e=>onClick(e, e.target.value)}>
+            <select name={name} value={value?value:''} style={style?style:{}} onClick={e=>onClick(e, e.target.value)}>
                 <option value={value[name]?value[name]:''} disabled>Pick from list</option>
                 {list.map(it=>
-                   <option value={it[selectValue]} className={it[selectValue]===value[name]?"is-active":""}>{it[selectLabel]}</option>
+                   <option value={it[selectValue]} style={style?style:{}} className={it[selectValue]===value[name]?"is-active":""}>{it[selectLabel]}</option>
                 )}
             </select>
             </div>

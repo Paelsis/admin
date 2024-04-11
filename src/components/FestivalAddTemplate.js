@@ -237,7 +237,7 @@ export default () =>
    
     const handleFetchTemplate = value => {
         setTemplateName(value)
-        serverFetchData_SLIM4('/fetchFestivalTemplate?templateName=' + templateName, handleFetchTemplateReply)
+        serverFetchData_SLIM4('/fetchFestivalTemplate?templateName=' + value, handleFetchTemplateReply)
     }    
     return(
         <div style={{position:'relative'}}>
