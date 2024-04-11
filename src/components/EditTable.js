@@ -7,7 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EmailIcon from '@mui/icons-material/Email'
 import SearchIcon from '@mui/icons-material/Search'
 import CancelIcon from '@mui/icons-material/Cancel'
-import { Tooltip, IconButton } from '@mui/material';
+import { Tooltip, IconButton, Button} from '@mui/material';
 
 import ReactRte from 'react-rte';
 
@@ -15,14 +15,15 @@ const TEXTAREA_FIELDS=['textBody']
 
 const styles = {
     root:{
-        height:'100vh',
-        margin:'auto'
+        margin:'auto',
+        overflow:'auto'
+    },
+    table:{
+        fontSize:22
     },
     th: {
-        color:'white', 
-        backgroundColor:'black',
+        color:'white',
         wordWrap:'break-word',
-        width:20
     },
     tr: active=>({
         backgroundColor:active?active==1?'orange':'transparent':'transparent',
@@ -36,11 +37,10 @@ const styles = {
         maxLength:20
     },
     add: {
-        fontSize:18,
-        background:'lightGreen'
+        wordWrap:'break-word',
     },
     search: {
-        background:'lightYellow'
+        wordWrap:'break-word',
     }
 }
 
@@ -53,56 +53,67 @@ const Rte = ({value, handleSave}) => {
     )
 }
 
-const RenderEdit = ({record, columns, handleChange, handleSave, handleCancel}) => {
+const _RenderEdit = ({record, setRecord, buttons, columns, handleChange}) => {
     const keys = columns?columns.map(it=>it.Field):Object.entries(record).filter(it=>it[0] !== 'id' && it[0].indexOf('Timestamp') === -1)
+    const onClick = (button, record) => {
+        if (button.toggle) {
+            setRecord(undefined)
+        }
+        button.handleClick(record)
+    }
+
+
+
     return(
         record?
-            <div style={styles.root}>
-                {keys.map(key=>
-                    <tr style={{fontSize:18}}>
-                            <>
-                            <td>{key}</td>
-
-                            <td>
-                            {TEXTAREA_FIELDS.includes(key)?
-                                <textarea style={styles.add} rows={3} columns={50} name={key} placeholder={key} value = {record[key]} onChange={handleChange}/>
-                            :
-                                <input style={styles.add} type={'text'} name={key} placeholder={record[key]} value = {record[key]} onChange={handleChange}/>
-                            }    
-                            </td>
-                            </>
+            <table>
+                <thead>
+                    <tr>
+                        <th style={styles.th}>Name</th>
+                        <th style={styles.th} >Value</th>
                     </tr>
-                )}       
-                <td colSpan={2}>
-                    {record.id?
-                        <Tooltip title={'Save'}>
-                            <IconButton onClick={handleSave}>
-                                <SaveIcon /> 
-                           </IconButton>
-                        </Tooltip>   
+                </thead>
+
+                <tbody>
+                    {keys.map(key=>
+                        <tr>
+                            <th style={styles.th}>
+                                {key}
+                            </th>
+                            <td>
+                                {TEXTAREA_FIELDS.includes(key)?
+                                    <textarea style={styles.add} rows={3} columns={50} name={key} placeholder={key} value = {record[key]} onChange={handleChange}/>
+                                :
+                                    <input style={styles.add} type={'text'} name={key} placeholder={record[key]} value = {record[key]} onChange={handleChange}/>
+                                }    
+                            </td>
+                        </tr>
+                    )}  
+
+                    {buttons?     
+                        <tr>
+                            <td colSpan={2}>
+                                {buttons.map(button => 
+                                    button.icon?
+                                            <IconButton onClick={()=>onClick(button, record)}>
+                                                {button.icon}                            
+                                            </IconButton>
+                                    :    
+                                            <Button variant={button.variant?button.variant:'outlined'} style={{color:'white'}} onClick={()=>onClick(record)}>{button.label?button.label:'No label'}</Button>
+                                )}    
+                            </td>
+                        </tr>
                     :
-                        <Tooltip title={'Add row to table'}>
-                            <span>
-                            <IconButton onClick={handleSave}>
-                                <AddIcon />
-                            </IconButton>
-                                
-                            </span>
-                        </Tooltip>   
+                        <tr>
+                            <td colSpan={2}>No buttons</td>
+                        </tr>
                     }
-                    &nbsp;
-                    {
-                        <Tooltip title={'Cancel'}>
-                            <IconButton onClick={handleCancel}>
-                                <CancelIcon />
-                            </IconButton>
-                        </Tooltip>   
-                    }
-                </td>
-            </div>
+                </tbody>
+            </table>
         :
             <h3>No record</h3>
     )
+
 }
 
 const maillist = (list, fld) => list.map(it => it[fld]?it[fld]:'').join(', ')
@@ -115,7 +126,7 @@ const HeaderValue = ({list, fld, comment}) =>
             </th>
         </Tooltip>
     :  
-        <th>
+        <th style={styles.th}>
             {fld}&nbsp;
             <a href={'mailto:?bcc=' + maillist(list, fld) + '&subject=Mail från TK'} target="_top">
                 <EmailIcon style={{cursor:'pointer', fontSize:'small', color:'lightBlue'}} />
@@ -143,20 +154,29 @@ const RenderTable = ({list, columns, filterList, handleEdit, handleDelete, searc
     const keys = columns?columns.map(it=>it.Field):Object.keys(list[0])
     const filterColumns = key => keys?true:key!=='id' 
     return(
-    <table style={{...styles.root, border:'1px solid lightGrey', margin:10}} >
-        <tr style={{color:'white', backgroundColor:'black'}}>
-            {keys.filter(filterColumns).map(it=>
-                <Tooltip title={handleComment(it)}>  
-                    <HeaderValue list={list} fld={it?it:'No name'} comment={handleComment(it)}/>
-                </Tooltip>
-            )}    
-            <th colSpan={2} style={styles.th}/>
-        </tr>
-        <tr>
-            {keys.map(it=><SearchValue fld={it} search={search} setSearch={setSearch} />)}
-            {<th><SearchIcon onClick={handleFilter} /></th>}
-            <th/>
-        </tr>
+    <table style={{border:'1px solid lightGrey', margin:10}} >
+        <thead>
+            <tr style={{color:'white', backgroundColor:'black'}}>
+                {keys.filter(filterColumns).map(it=>
+                    <Tooltip title={handleComment(it)}>  
+                        <HeaderValue list={list} fld={it?it:'No name'} comment={handleComment(it)}/>
+                    </Tooltip>
+                )}    
+                <th colSpan={2} style={styles.th}/>
+            </tr>
+            {list > 5?
+            <tr>
+                {keys.map(it=>
+                    <SearchValue fld={it} search={search} setSearch={setSearch} />
+                )}
+                {<th>
+                    <SearchIcon onClick={handleFilter} />
+                </th>}
+
+                <th/>
+            </tr>
+            :null}
+        </thead>
         <tbody>
             {filterList.map(row => 
                     <tr style={styles.tr(row.active)}>
@@ -175,7 +195,7 @@ const RenderTable = ({list, columns, filterList, handleEdit, handleDelete, searc
     )
 }    
 
-const EditTable = ({tableName, columns, list, setList, style}) => {
+const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
     const [record, setRecord] = useState(undefined)
     const [recordRte, setRecordRte] = useState(undefined)
     const [search, setSearch] = useState({})
@@ -297,9 +317,11 @@ const EditTable = ({tableName, columns, list, setList, style}) => {
     return(
         <div style={styles.root}>
             {record?
-                <RenderEdit 
+                <_RenderEdit 
                     columns={columns} 
+                    buttons={buttons}
                     record={record} 
+                    setRecord={setRecord}
                     handleChange={handleChange} 
                     handleChangeRte={handleChangeRte} 
                     handleSave={handleSave} 
@@ -307,9 +329,6 @@ const EditTable = ({tableName, columns, list, setList, style}) => {
                 />
             :list.length > 0?
                 <>
-                    <Tooltip title={'Add row'}>
-                        <AddIcon onClick={()=>setRecord(emptyRow)} />
-                    </Tooltip>    
                     <RenderTable 
                         list={list}
                         columns={columns}
@@ -317,10 +336,9 @@ const EditTable = ({tableName, columns, list, setList, style}) => {
                         filterList={filterList?filterList:list} 
                         setSearch={setSearch}
                         handleFilter={()=>handleFilter(list)}
-                        handleEdit={row=>{setRecord(row)}} 
+                        handleEdit={setRecord} 
                         handleDelete={handleDelete} 
                         handleComment={handleComment} 
-
                     />
                 </>
             :<h1>List is empty</h1>}

@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-const apiBaseUrl = process.env.REACT_APP_API_BASE_URL
 const username = process.env.REACT_APP_SLIM_USERNAME
 const password = process.env.REACT_APP_SLIM_PASSWORD
 const auth = {username, password}
@@ -8,7 +7,7 @@ const auth = {username, password}
 const serverPostApi = (apiBaseUrl, irl,  input, handleReply) => {
     const url = irl.slice(0,4).toLowerCase().localeCompare('http')===0?irl:apiBaseUrl + irl
     const axiosConfig = {
-        auth: {username, password}
+        auth,
     }
     axios.post(url, input, axiosConfig)
     .then(reply => {
@@ -18,7 +17,7 @@ const serverPostApi = (apiBaseUrl, irl,  input, handleReply) => {
                 const message = '[serverPost] status:OK data:' + JSON.stringify(data)
                 console.log(message)
             } else {
-                const message = '[serverPost] status:' + data.status + ' input:' + JSON.stringify(input) + ' data:' + JSON.stringify(data)
+                const message = '[serverPost] status:' + data.status + ' data:' + JSON.stringify(data)
                 console.log(message)
                 alert(message)
             }    
@@ -59,7 +58,7 @@ export const replaceRowApi = (apiBaseUrl, tableName, data, handleReply) =>
     serverPostApi(apiBaseUrl, irl, value, handleReply)
 }
 
-export const deleteRowApi = (tableName, id, handleReply) =>
+export const deleteRowApi = (apiBaseUrl, tableName, id, handleReply) =>
 {
     const url=apiBaseUrl + '/admin/deleteRow'
     const value = {
@@ -80,4 +79,3 @@ export const deleteRow = (tableName, data, handleReply) => deleteRowApi(process.
 export const deleteRow_SLIM4 = (tableName, data, handleReply) => deleteRowApi(process.env.REACT_APP_API_BASE_URL_SLIM4, tableName, data, handleReply)
 
 
-export default serverPost

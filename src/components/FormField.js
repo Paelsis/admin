@@ -71,7 +71,6 @@ const FormField = props => {
         setValue({...value, [e.target.name]:e.target.value});
     }    
 
-
     const required = fld.required?true:false 
     const disabled = fld.disabled?fld.disabled:fld.disabledFunc?fld.disabledFunc(value):false
     const labelStyle={fontWeight:700, ...props.labelStyle?props.labelStyle:{}, opacity:disabled?0.4:1.0}
@@ -129,7 +128,7 @@ const FormField = props => {
                                 {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
                         </label>    
                         <br/>
-                        {radioValues.map((radio, idx) =>
+                        {radioValues?radioValues.map((radio, idx) =>
                             <label>
                                 <input 
                                     key={fld.name + idx}
@@ -143,7 +142,10 @@ const FormField = props => {
                                 />
                                 &nbsp;<span>{radio.label?radio.label:radio}</span>&nbsp;
                             </label>
-                        )}
+                            )
+                        :
+                            <h1>No radio values</h1>
+                        }
                     </p> 
                 )
                 case 'select':

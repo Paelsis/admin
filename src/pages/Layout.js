@@ -45,29 +45,24 @@ export default () => {
 
         <div class="navbar-dropdown">
           {dropdownListCourse.map(it=>
-          <Link to={'/table/' + it.tableName} class="navbar-item">
-            {it.label}
-          </Link>)}
-          <Link to={'/schemaCourse'} class="navbar-item">
-             Course Schema
-          </Link>
+            <Link to={it.link?it.link:'/'} class="navbar-item">
+              {it.label}
+            </Link>
+          )}
         </div>
       </div>
 
       <div class="navbar-item has-dropdown is-hoverable">
         <a class="navbar-link">
-          Festivals
+          Festival
         </a>
 
         <div class="navbar-dropdown">
           {dropdownListFestival.map(it=>
-          <Link to={'/table/' + it.tableName} class="navbar-item">
-            {it.label}
-          </Link>)}
-          <Link to={'/changeRegistrationFestival'} class="navbar-item">
-            Change Registration Festival
-          </Link>
-
+            <Link to={it.link?it.link:'/'} class="navbar-item">
+              {it.label}
+            </Link>
+          )}
         </div>
       </div>
 
@@ -78,7 +73,7 @@ export default () => {
 
         <div class="navbar-dropdown">
           {dropdownListOther.map(it=>
-          <Link to={'/table/' + it.tableName} class="navbar-item">
+          <Link to={it.link?it.link:'/'} class="navbar-item">
             {it.label}
           </Link>)}
         </div>

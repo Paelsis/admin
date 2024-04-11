@@ -1,53 +1,48 @@
 export const dropdownListCourse = [
     {
         label:'Course Definitions',
-        route:'/table',
-        tableName:'tbl_course_def'
+        link:'/table/tbl_course_def',
     },
     {
         label:'Course Schema',
-        route:'/table',
-        tableName:'tbl_course',
+        link:'/table/tbl_course',
         hasDivider:true,
     },
     {
         label:'Course Type',
-        route:'/table',
-        tableName:'tbl_course_type',
+        link:'/table/tbl_course_type',
         hasDivider:true,
     },
 ]
 
 export const dropdownListFestival = [
     {
-        label:'Schedule',
-        route:'/table',
-        tableName:'tbl_schedule_def'
+        label:'Modify Template',
+        link:'/festivalTemplate',
+    },
+    {
+        label:'Modify registration',
+        link:'/festivalChangeRegistration',
 
     },
     {
+        label:'Workshop',
+        link:'/table/tbl_workshop',
+    },
+    {
         label:'Packages',
-        route:'/table',
-        tableName:'tbl_workshop'
+        link:'/table/tbl_package',
     },
 ]
 
 export const dropdownListOther = [
     {
         label:'Text',
-        route:'/table',
-        tableName:'tbl_text'
-
-    },
-    {
-        label:'Course type',
-        route:'/table',
-        tableName:'tbl_course_type'
+        link:'/table/tbl_text',
     },
     {
         label:'Form field',
-        route:'/table',
-        tableName:'tbl_form_field'
+        link:'/table/tbl_form_field',
     },
 ]
 

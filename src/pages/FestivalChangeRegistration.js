@@ -1,62 +1,53 @@
 import {useState} from 'react'
 // import { useNavigate, useParams }  from 'react-router-dom';
 import {serverFetchData_SLIM4} from '../services/serverFetch'
-import Picklist from '../components/Picklist'
-import EditTable from '../components/EditTable'
-import ViewTable from '../components/ViewTable'
+import {serverPost_SLIM4} from '../services/serverPost'
 import {Button, IconButton} from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save'
+import CancelIcon from '@mui/icons-material/Cancel'
+import Picklist from '../components/Picklist'
+import ViewTable from '../components/ViewTable'
 import FormTemplate from '../components/FormTemplate'
+import RenderChecklist from '../components/RenderChecklist'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 
-const RenderForm = ({list, setList}) => {
-    const handleChange = (index, name, checked) => {
-        setList(list.map((it, idx) => {
-            if (index === idx) {
-                return {...it, checked} 
-            } else {
-                return it
-            }
-    }))
-    }
-    return(
-        <form>
-            {list.map((pk, index)=>
-                <>
-                <label>
-                    <input type={pk.type} checked={pk.checked} name={pk.name} onChange = {e=>handleChange(index, e.target.name, e.target.checked)}/>
-                &nbsp;
-                {pk.name}&nbsp;{pk.checked?'true':'false'}    
-                </label>
-                <br/>
-                </>
-            )}
-        </form>
-    )
-}
     
-const columns = [
+const FIELDS_REGISTRATION = [
     {
-        Field:'firstName',
+        label:'Name (first name)',
+        name:'firstName',
+        type:'text',
     },
     {
-        Field:'lastName',
+        label:'Sirname (last name)',
+        name:'lastName',
+        type:'text',
     },
     {
-        Field:'email',
+        label:'email',
+        name:'email',
+        type:'email', 
     },
     {
-        Field:'role',
+        label:'Dance role',
+        name:'role',
+        type:'radio',
+        radioValues:[{label:'Leader', value:'LEADER'}, {label:'Follower', value:'FOLLOWER'}, {label:'Both', value:'BOTH'}],
     }
 ]
     
 
 
-const Function =  () => {
+const FestivalChangeRegistration =  () => {
+    const [registrationOld, setRegistrationOld] = useState()
     const [registration, setRegistration] = useState()
     const [schedule, setSchedule] = useState()
     const [packages, setPackages] = useState()
     const [workshops, setWorkshops] = useState()
     const [checkedPackages, setCheckedPackages] = useState()
     const [checkedWorkshops, setCheckedWorkshops] = useState()
+    const [toggleMore, setToggleMore] = useState()
 
     const [eventType, setEventType] = useState()
     const [year, setYear] = useState()
@@ -77,37 +68,52 @@ const Function =  () => {
         }   
     }
 
+    const handleReplyUpdate = reply => {
+        const data = reply.data?reply.data:reply
+        if (data.status === 'OK') {
+            alert("Successful update. status:" + data.status + " result:" +  JSON.stringify(data))
+        } else {
+            alert('ERROR: status=' + data.status + ' message=' +  (data.message?data.message:'No message'))
+        }    
+    }
+
+    const handleUpdate = () => {
+        const data = {
+            registrationOld,
+            registration, 
+            workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))},
+            packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))}
+        } 
+        serverPost_SLIM4('/updateRegistrationFestival', data, handleReplyUpdate)
+    }
+
+
+
+
     const handleClick = item => {
         // alert(JSON.stringify(item.email))
-        setRegistration(item)
+        const reg = {...item, label:undefined}
+        setRegistrationOld(reg)
+        setRegistration(reg)
+
+
+        // alert ('registration:' +  JSON.stringify(item))
        
-        serverFetchData_SLIM4('/fetchFestival?eventType=' + item.eventType + '&year=' + item.year 
-        + '&email=' + item.email + '&role=' + item.role
+        serverFetchData_SLIM4('/fetchFestival?eventType=' + reg.eventType + '&year=' + reg.year 
+        + '&email=' + reg.email + '&role=' + reg.role  
         , 
         handleReply)
     }
 
-    const handleSave = () => {
-        const checkedWorkshops = workshops.filter(it => it.checked === true)
-        const checkedPackages = workshops.filter(it => it.checked === true)
 
-        alert(
-            'registration:' + JSON.stringify(registration) + '\n' + 
-            'PACKAGES:' + JSON.stringify(checkedPackages) + '\n' + 
-            'WORKSHOPS:' + JSON.stringify(checkedWorkshops)
-        )
-
-    }
-
-    const setValue = e => {
-        setRegistration({...registration, [e.target.name]:e.target.value})
-    }   
 
     const renderOutput = () => {
         return(
             <>
                 {registration?
-                    <EditTable list={[registration]} columns={columns} value={registration} setValue={setValue} />
+                    <>
+                        <FormTemplate fields = {FIELDS_REGISTRATION} value={registration} setValue={setRegistration} />
+                    </>
                 :null} 
 
                 {schedule?
@@ -119,21 +125,27 @@ const Function =  () => {
                 {packages?
                     <>
                         <h1>PACKAGES</h1>
-                        <RenderForm list={packages} setList={setPackages} />
+                        <RenderChecklist list={packages} setList={setPackages} />
                     </>
                 :null}
                 {workshops?
                     <>
                         <h1>WORKSHOPS</h1>
-                        <RenderForm list={workshops} setList={setWorkshops} />
+                        <RenderChecklist list={workshops} setList={setWorkshops} />
                     </>
                 :null}
+            </>
+        )    
+    }
 
+    const renderMoreOutput = () => {
+        return(
+            <div>
                 {packages?
-                    <>
-                        <h1>PACKAGES</h1>
-                        <ViewTable cols={['name', 'productId', 'checked']} list={packages} />
-                    </>
+                <>
+                    <h1>PACKAGES</h1>
+                    <ViewTable cols={['name', 'productId', 'checked']} list={packages} />
+                </>
                 :null}
                 {checkedPackages?
                     <>
@@ -153,13 +165,9 @@ const Function =  () => {
                     <ViewTable cols={['name', 'productId']} list={checkedWorkshops} />
                 </>
                 :null}
-            </>
-        )    
-    }
-
-
-
-
+            </div>
+        )
+    }    
 
     return(
         <div style = {{with:'200vw', textAlign:'left'}}>
@@ -197,14 +205,21 @@ const Function =  () => {
                         close={true}
                     />
                 </div>
+
                 
             </div>
 
             {registration?
                 <>
                     {renderOutput()}
-                    <IconButton onClick={handleSave}>
-                        <Button variant='outlined' />
+
+                    {toggleMore===true?renderMoreOutput():null}
+
+                    <IconButton onClick={handleUpdate}>
+                        <SaveIcon />
+                    </IconButton>    
+                    <IconButton onClick={()=>setToggleMore(toggleMore?false:true)}>
+                        {toggleMore?<UnfoldLessIcon />:<UnfoldMoreIcon />}
                     </IconButton>    
                 </>
             :null}    
@@ -213,4 +228,4 @@ const Function =  () => {
     )
 }    
 
-export default Function;
+export default FestivalChangeRegistration;

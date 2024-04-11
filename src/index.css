@@ -25,51 +25,22 @@ code {
 }
 
 table {
-    max-width: 100vw;
 	border-collapse: collapse;
-	overflow: hidden;
+	overflow: auto;
 	box-shadow: 0 0 20px rgba(0,0,0,0.1);
-}
-
-th,
-td {
-	padding: 15px;
-	background: linear-gradient(45deg, #49a09d, #5f2c82);
-	color: #fff;
+	color:green;
 }
 
 th {
-	text-align: left;
+	padding: 15px;
+	background:whitesmoke;
+	color:yellow;
 }
 
-thead {
-	background:red;
+td {
+	padding: 15px;
+	background: whitesmoke; /* linear-gradient(45deg, #49a09d, #5f2c82);*/
+	color: black;
 }
 
-tbody {
-	th {
-		color: #fff;
-		/*background: linear-gradient(45deg, #49a09d, #5f2c82);*/
-		background-color: #55608f; 
-	}
-	tr {
-		&:hover {
-			background-color: rgba(255,255,255,0.3);
-		}
-	}
-	td {
-		position: relative;
-		&:hover {
-			&:before {
-				content: "";
-				position: absolute;
-				left: 0;
-				right: 0;
-				top: -9999px;
-				bottom: -9999px;
-				background-color: rgba(255,255,255,0.2);
-				z-index: -1;
-			}
-		}
-	}
-}
+

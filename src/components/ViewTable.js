@@ -2,17 +2,9 @@ import {isNormalVariable} from '../services/functions'
 
 const styles = {
     container:{
-        width:'100%',
-    },
-    table:{
-        marginLeft:'auto',
-        marginRight:'auto',
         overflow:'auto',
+        margin:'auto',
     },
-    thead:{
-        textAlign:'center'
-    }
-
 }
 
 export default ({cols, list, buttons}) => {
@@ -20,18 +12,19 @@ export default ({cols, list, buttons}) => {
     return(
     list?    
     <div style={styles.container}>
-        
-        <table style={styles.table} >
-            <tr>
-                {colons.map(col=>
-                    <th>{col}</th>
-                )}
-                {buttons?buttons.map(button =>
-                    <th>
-                        {button.label?button.label:'Button'}
-                    </th>
-                ):null}
-            </tr>
+        <table>
+            <thead>
+                <tr>
+                    {colons.map(col=>
+                        <th>{col}</th>
+                    )}
+                    {buttons?buttons.map(button =>
+                        <th>
+                            {button.label?button.label:'Button'}
+                        </th>
+                    ):null}
+                </tr>
+            </thead>
             <tbody>
                 {list.map(li=>
                     <tr>

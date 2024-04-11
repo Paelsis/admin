@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect} from 'react';
-import Button, { buttonClasses } from '@mui/material/Button';
+import Button, {IconButton, buttonClasses} from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import FormField from './FormField';
 import {isEmail, getTypeFromColumnType} from '../services/functions'
@@ -17,7 +17,7 @@ const getField = column => {
 // FormTemplate.js
 // FormTemplate.js
 export default props => {
-    const {fields, buttons, value, setValue, setStatusLine} = props
+    const {fields, buttons, value, setValue} = props
     const handleKeyPress = e => {
         if (e.key === 'Enter' && !!props.handlePressEnter) {
             props.handlePressEnter()
@@ -63,7 +63,7 @@ export default props => {
                         null
                     }    
 
-                    {buttonClasses?
+                    {buttons?
                         <div style={{paddingTop:20, paddingBottom:20}}>
                             {buttons.map(button =>
                                 <Tooltip 

@@ -5,8 +5,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from "./pages/Home"
 import Layout from "./pages/Layout"
 import SchemaCourse from "./pages/SchemaCourse"
-import Festival from "./pages/Festival"
-import ChangeRegistrationFestival from "./pages/ChangeRegistrationFestival"
+import FestivalTemplate from "./pages/FestivalTemplate"
+import FestivalChangeRegistration from "./pages/FestivalChangeRegistration"
 import Other from "./pages/Other"
 import Table from "./pages/Table"
 import Register from "./components/Register"
@@ -19,8 +19,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="home" element={<Home />} />
-          <Route path="festival" element={<Festival />} />
-          <Route path="changeRegistrationFestival" element={<ChangeRegistrationFestival />} />
+          <Route path="festivalTemplate" element={<FestivalTemplate />} />
+          <Route path="festivalChangeRegistration" element={<FestivalChangeRegistration />} />
           <Route path="other" element={<Other />} />
           <Route path="table/:tableName" element={<Table />} />
           <Route path="register" element={<Register />} />

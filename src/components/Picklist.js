@@ -60,3 +60,41 @@ export default ({labelButton, tableName, labelName, valueName, value, handleClic
     </>
   )
 }
+
+export const Select =  ({tableName, name, selectLabel, selectValue, value, handleClick, unique}) => {
+    const [list, setList] = useState([])
+    const [active, setActive] = useState(false)
+
+    const handleReply = reply => {
+        const data = reply.data?reply.data:reply
+        if (data.status === 'OK' || data.status === 'true' || data.status) {
+            setList(unique?uniqueObjectList(data.result, selectLabel):data.result)
+        } else {
+            alert('ERROR: Call to get data from table ' + tableName + ' failed. Message:' + data.message?data.message:'')
+        }
+    }    
+
+    useEffect(()=>{
+        const url = '/fetchRows?tableName=' + tableName
+        serverFetchData_SLIM4(url, handleReply)
+    }, [tableName])
+
+    const onClick = (e, val) => {
+        e.preventDefault()
+        alert(val)
+        handleClick(val)
+    }
+    
+    return(
+        <>
+            <div className={active?"select is-active":"select"}>
+            <select name={name} value={value?value:''} onClick={e=>onClick(e, e.target.value)}>
+                <option value={value[name]?value[name]:''} disabled>Pick from list</option>
+                {list.map(it=>
+                   <option value={it[selectValue]} className={it[selectValue]===value[name]?"is-active":""}>{it[selectLabel]}</option>
+                )}
+            </select>
+            </div>
+        </>
+  )
+}
