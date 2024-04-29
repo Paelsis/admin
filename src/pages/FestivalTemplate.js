@@ -1,27 +1,55 @@
 import {useState} from 'react'
 import Picklist, {Select} from '../components/Picklist'
 import {Button, IconButton} from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save'
+import SaveIcon from '@mui/icons-material/SaveOutlined'
+import SaveAsIcon from '@mui/icons-material/SaveAsOutlined';
 import AddIcon from '@mui/icons-material/Add'
 import CopyIcon from '@mui/icons-material/ContentCopy'
-import EditTableWithPicklist from '../components/EditTableWithPicklist';
+import MoveUpIcon from '@mui/icons-material/MoveUp';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import Tooltip from '@mui/material/Tooltip';
+import EditTableWithSelect from '../components/EditTableWithSelect';
 import { serverPost_SLIM4 } from '../services/serverPost';
 import { serverFetchData_SLIM4 } from '../services/serverFetch';
 
+const COLUMNS_SCHEDULE=[
+    {type:'textarea', label:'Name swedish', name:'nameSV',  placeholder:'Namn på svenska', required:true, cols:30, maxlength:50},     
+    {type:'textarea', label:'Name english', name:'nameEN',  placeholder:'Namn på engelska', required:true, cols:30, maxlength:50},   
+    {type:'select', 
+        name:'eventType',  
+        label:'Event type',
+        tableName:'ref_event_type', 
+        selectLabel:'eventType', 
+        selectValue:'eventType',
+        required:true,
+        unique:true,
+    },    
+    {type:'date', label:'Startdate reg', name:'openRegDate',  required:true},    
+    {type:'time', label:'Starttime reg', name:'openRegTime',  required:true, },    
+    {type:'date', label:'Startdate', name:'startDate',  required:true, },    
+    {type:'time', label:'Starttime', name:'startTime',  required:true, },    
+    {type:'date', label:'Enddate', name:'endDate',  required:true, },    
+    {type:'time', label:'Endtime', name:'endTime',  required:true, },    
+    {type:'text', label:'Image url (url)', name:'replyImage'},    
+    {type:'number', label:'Max participants', name:'maxParticipants'},    
+]
+
+
 
 const COLUMNS_PACKAGE=[
-    {type:'textarea', label:'Name (shown to customer)', name:'name',  placeholder:'Name in english', required:true, cols:50},     
-    {type:'text', label:'Shortname', name:'packageId',  placeholder:'Ex: PACKAGE_1', unique:true, required:true, },    
-    {type:'number', label:'Nbr of WS', name:'wsCount',  placeholder:'Ex: 5'},    
-    {type:'number', label:'Minutes WS', name:'minutes',  placeholder:450},    
-    {type:'picklist', 
+    {type:'textarea', label:'Name (shown to customer)', name:'name',  placeholder:'Name in english', cols:30, required:true, maxlength:1000},     
+    {type:'text', label:'Shortname', name:'packageId',  placeholder:'Ex: PACKAGE_1', unique:true, required:true, maxlength:50},    
+    {type:'number', label:'Nbr of WS', name:'wsCount',  placeholder:'Ex: 5', required:true},    
+    {type:'number', label:'Minutes WS', name:'minutes',  placeholder:450, required:true},    
+    {type:'select', 
         name:'productType',  
         label:'Product-type',
         tableName:'tbl_package_product_type', 
         selectLabel:'nameEN', 
         selectValue:'productType',
-        required:true,
         unique:true,
+        required:true,
     },    
     {type:'number', label:'Price(SEK)', name:'priceSEK',  placeholder:'Ex: 300 SEK', required:true},    
     {type:'number', label:'Price(EUR)', name:'priceEUR',  placeholder:'Ex: 300 EUR'},    
@@ -33,18 +61,18 @@ const COLUMNS_WORKSHOP=[
 //    {label:'Schedule', name:'scheduleId',  type:'select', tableName:'tbl_schedule_def', selectKey:'scheduleId', selectValue:'scheduleId', hidden:true},    
 //    {label:'Workshop def', name:'workshopId',  type:'select', placeholer:'tbl_workshop_def', selectKey:'workshopId', selectValue:'workshopId'},    
 //    {label:'Workshop id', name:'workshopId',  type:'text', placeholer:'Workshop Id'},    
-    {type:'textarea', label:'Name (shown to customer)', name:'name',  placeholder:'Name in english', required:true, unique:true, cols:50},    
-    {type:'text', label:'Shortname', name:'workshopId', placeholder:'Short name', required:true, unique:true},    
-    {type:'number', label:'Nbr of WS', name:'wsCount', placeholder:1},  
-    {type:'number', label:'Minutes WS', name:'minutes', placeholder:90},  
+    {type:'textarea', label:'Name (shown to customer)', name:'name',  placeholder:'Name in english', required:true, unique:true, cols:30, maxlength:1000},    
+    {type:'text', label:'Shortname', name:'workshopId', placeholder:'Short name', unique:true, required:true, maxlength:50},    
+    {type:'number', label:'Nbr of WS', name:'wsCount', placeholder:1, required:true},  
+    {type:'number', label:'Minutes WS', name:'minutes', placeholder:90, required:true},  
     {type:'select', 
         name:'productType',  
         label:'Product-type',
         tableName:'tbl_workshop_product_type', 
         selectLabel:'productType', 
         selectValue:'productType',
-        required:true,
         unique:true,
+        required:true,
     },    
     {type:'number', label:'Price(SEK)', name:'priceSEK',  placeholder:'Ex: 300 SEK', required:true},    
     {type:'number', label:'Price(EUR)', name:'priceEUR',  placeholder:'Ex: 300 EUR'},    
@@ -54,8 +82,8 @@ const COLUMNS_WORKSHOP=[
         tableName:'v_ref_teacher', 
         selectLabel:'name',  // Column-name in tableName that is shown in picklist as item label
         selectValue:'shortName', // Column-name in tableName that is used as value when onClick is sending its value
-        required:true,
         unique:true,
+        required:true,
     },    
     {type:'select', 
         label:'Teacher2',
@@ -63,8 +91,8 @@ const COLUMNS_WORKSHOP=[
         tableName:'v_ref_teacher', 
         selectLabel:'name', 
         selectValue:'shortName',
-        required:true,
         unique:true,
+        required:true,
     },    
     {type:'select', 
         label:'Location',
@@ -180,34 +208,56 @@ const AddRow = ({columns, list, setList}) => {
 
 export default () =>
 {
-    const [templateName, setTemplateName] = useState([])
-    const [schedule, setSchedule] = useState()
+    const [templateName, setTemplateName] = useState('Default')
+    const [schedules, setSchedules] = useState([])
     const [workshops, setWorkshops] = useState([])
     const [packages, setPackages] = useState([])
 
     const handleReplyUpdate = data => {
         if (data.status?data.status === 'OK':false) {
-            setWorkshops(data.workshops)
-            setPackages(data.packages)
+            setTemplateName(templateName)
         } else {
             alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
         }
     }    
-    
-    
+
+
+
+
+    const handleUpdateAs = () => {
+        const ans = prompt("Please enter templateName (Examples:SUMMER_2024 or FESTIVALITO_2024, EASTER_2025");
+        if (ans === null) {
+            alert('Nothing saved')
+        } else {   
+            const templateName = ans
+            const data = {
+                schedules: [...schedules.map(it=>({...it, templateName}))], 
+                workshops:[...workshops.filter(it=>it.checked).map(it=>({...it, templateName}))],
+                packages:[...packages.filter(it=>it.checked).map(it=>({...it, templateName}))]
+            }
+            serverPost_SLIM4('/updateFestivalTemplate', data, handleReplyUpdate)
+        }    
+    }
+
+
     const handleUpdate = () => {
         const data = {
-            schedule,
-            workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, templateName}))},
-            packages:{...packages.filter(it=>it.checked).map(it=>({...it, templateName}))}
-        } 
-        serverPost_SLIM4('/updateTemplateFestival', data, handleReplyUpdate)
+            schedules:schedules.map(it=>({...it, templateName})),
+            workshops:workshops.map(it=>({...it, templateName})),
+            packages:packages.map(it=>({...it, templateName}))
+        }
+        serverPost_SLIM4('/updateFestivalTemplate', data, handleReplyUpdate)
     }
-    
 
+    const triggerUpdate = () => {
+        setTimeout(()=>handleUpdate()
+        , 1000);
+    }
+
+    
     const handleFetchTemplateReply = data => {
         if (data.status?data.status === 'OK':false) {
-            setSchedule(data.schedule?data.schedule:{})
+            setSchedules(data.schedules?data.schedules:[])
             setWorkshops(data.workshops)
             setPackages(data.packages)
         } else {
@@ -219,30 +269,67 @@ export default () =>
         setTemplateName(value)
         serverFetchData_SLIM4('/fetchFestivalTemplate?templateName=' + value, handleFetchTemplateReply)
     }    
+
+    const handleReleaseProduction = () => alert('Release all to production')
+    const handleRemoveFromProduction = () => alert('Remove from production')
+
     return(
         <div style={{position:'relative'}}>
             <Picklist 
                 labelButton='Template' 
-                tableName='tbl_workshop_template' l
+                tableName='tbl_workshop_template' 
                 labelName='templateName' 
                 valueName='templateName' 
                 value={templateName} 
                 handleClick={handleFetchTemplate} unique={true} 
                 close={true} // Close after pick
             />
-            {schedule?schedule.templateName?
+            {schedules?schedules.length > 0?
                 <div className="columns is-centered">
-                    <div className='is-size-3'>{schedule.templateName}&nbsp;{schedule.eventType}&nbsp;{schedule.startDate}</div>
+                    <div className='is-size-3'>{schedules[0].templateName}</div>
                 </div>
             :null:null}    
-
-            {packages?packages.length > 0?<h1 className="is-size-4">Packages</h1>:null:null}
-            <EditTableWithPicklist columns={COLUMNS_PACKAGE} list={packages} setList={setPackages} />
-            {workshops?workshops.length > 0?<h1 className="is-size-4">Workshops</h1>:null:null}
-            <EditTableWithPicklist columns={COLUMNS_WORKSHOP} list={workshops} setList={setWorkshops} />
-            <IconButton onClick={handleUpdate}>
-            <SaveIcon />
-            </IconButton>    
+            {schedules?schedules.length > 0?
+                <h1 className="is-size-4">Schedule for {schedules[0].eventType + ' ' + schedules[0].startDate + ' - ' + schedules[0].endDate}</h1>
+            :null:null}
+            <EditTableWithSelect columns={COLUMNS_SCHEDULE} list={schedules} setList={setSchedules} ignoreAdd={true} triggerUpdate={triggerUpdate} />
+            {packages?<h1 className="is-size-4">Packages</h1>:null}
+            <EditTableWithSelect columns={COLUMNS_PACKAGE} list={packages} setList={setPackages} triggerUpdate={triggerUpdate}/>
+            {workshops?<h1 className="is-size-4">Workshops</h1>:null}
+            <EditTableWithSelect columns={COLUMNS_WORKSHOP} list={workshops} setList={setWorkshops} triggerUpdate={triggerUpdate} />
+            {schedules?   
+                <>
+                    <Tooltip title='Save the data under current template name'>
+                        <IconButton onClick={handleUpdate}>
+                            <SaveIcon />
+                        </IconButton>    
+                    </Tooltip>    
+        
+                    <Tooltip title='Save the the template under a new name'>
+                    <IconButton onClick={handleUpdateAs}>
+                        <SaveAsIcon />
+                    </IconButton>    
+                    </Tooltip>    
+                
+                    <Tooltip title='Release the current template to production'>
+                    <IconButton onClick={handleReleaseProduction}>
+                        <MoveUpIcon />
+                    </IconButton>    
+                    </Tooltip>    
+                
+                    <Tooltip title='Deleted single template from production'>
+                    <IconButton onClick={()=>alert('Delete OutlineIcon')}>
+                        <DeleteOutlineIcon />
+                    </IconButton>    
+                    </Tooltip>    
+                
+                    <Tooltip title='Delete all templates from production'>
+                    <IconButton onClick={()=>alert('DeleteOutlineSweepIcon')}>
+                        <DeleteSweepIcon />
+                    </IconButton>    
+                    </Tooltip>    
+                </>
+            :null}
         </div>
     )
 

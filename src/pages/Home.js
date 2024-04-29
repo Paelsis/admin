@@ -36,8 +36,8 @@ import Picklist from '../components/Picklist'
 export default () => {
     const [value, setValue] = useState()
     return(
-        <div className='columns is-centered' >
-            <h1>Home</h1>
+        <div className='columns is-centered' style={{marginTop:50}}>
+            <h1>Dance Administration</h1>
         </div>
     )
 }    

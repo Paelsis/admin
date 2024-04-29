@@ -65,14 +65,14 @@ const mapStateToProps = (state) => {
         username: state.user.username,
         password: state.user.password,
         language: state.language,
-        url:'/admin/getRegistrationHistory?language=' + state.language,
+        url:'/getRegistrationHistory?language=' + state.language,
         groupByDefArr:GROUP_BY_DEF_ARR,
         viewComponent:View1,
         viewFields:TAB_FIELDS,
         updateFields:UPDATE_FIELDS,
         tableUpdate:'tbl_registration_history',
-        urlUpdate:'/admin/updateRow',
-        urlUpdateAll:'/admin/updateList',
+        urlUpdate:'/updateRow',
+        urlUpdateAll:'/updateList',
     }
 }    
 

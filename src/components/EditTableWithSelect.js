@@ -9,21 +9,29 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import { Select } from './Picklist'
 
+const LabelWithSup = ({col}) => {
+    const supStyle = {color:'red', fontWeight:700}
+    return(
+        <>
+            {col.label}&nbsp;{col.required?<sup style={supStyle?supStyle:{}}>*</sup>:null}&nbsp;
+        </>    
+    )
+}
+
 const Column = ({noLabel, col, value, setValue, style}) => {
     const defaultArguments = {
         type:col.type,
         name:col.name,
         placeholder:noLabel?col.label:col.placeholder,
         checked:col.type === 'checkbox'?value[col.name]:undefined,
+        maxlength:col.maxlength,
         value:col.type === 'checkbox'?undefined:(value[col.name]?value[col.name]:''),
         required:col.required,
         radioValues:col.type==='radio'?col.radioValues:undefined,
     } 
     const label = col.label?col.label:'No label'
     const labelStyle = col.labelStyle?col.labelStyle:{}
-    const supStyle = col.supStyle?col.supStyle:undefined
     const selectValues = col.selectValues?col.selectValues:['ADAM', 'BERTIL', 'CESAR']
-
 
     const handleChange = e => {
         setValue({...value, [e.target.name]:e.target.type==='checkbox'?e.target.checked:e.target.value})
@@ -34,7 +42,7 @@ const Column = ({noLabel, col, value, setValue, style}) => {
             {noLabel?null:
                 <>
                 <label style={labelStyle}>
-                        {label}&nbsp;{col.required?<sup style={supStyle?supStyle:{}}>*</sup>:null}&nbsp;
+                    <LabelWithSup col={col} />
                 </label>    
                 <br />
                 </>
@@ -96,7 +104,7 @@ const Column = ({noLabel, col, value, setValue, style}) => {
 }
 
 
-const AddRow = ({noLabel, columns, list, setList}) => {
+const AddRow = ({columns, addRow, noLabel}) => {
     const [value, setValue] = useState({})
     return(
         <tr style={{fontSize:12}}>
@@ -106,8 +114,8 @@ const AddRow = ({noLabel, columns, list, setList}) => {
                 </td>
             )}    
             <td colSpan={3}>
-            <IconButton>
-                <AddIcon onClick={()=>setList([...list, value])} />
+            <IconButton onClick={()=>{addRow(value); setValue({})}}>
+                <AddIcon />
             </IconButton>
             </td>
         </tr>    
@@ -124,7 +132,7 @@ const AddRow = ({noLabel, columns, list, setList}) => {
             )}    
             <td colSpan={3}>
             <IconButton onClick={toggleEdit}>
-                <CloseIcon/>
+                <SaveIcon/>
             </IconButton>
             </td>
         </tr>
@@ -132,13 +140,16 @@ const AddRow = ({noLabel, columns, list, setList}) => {
  }
 
  const EditRowVertical = ({columns, row, handleRow, toggleEdit}) => {
+    const supStyle = {color:'red', fontWeight:700}
     return(
         <div class='column is-half'>
             <table>
             <tbody>
                 {columns.map(col => 
                     <tr>
-                        <th>{col.label}</th>
+                        <th>
+                            <LabelWithSup col={col} />
+                        </th> 
                         <td>
                         <Column noLabel={true} col={col} value={row} setValue={handleRow} />
                         </td>
@@ -147,7 +158,7 @@ const AddRow = ({noLabel, columns, list, setList}) => {
 
                 <tr colSpan={2}>
                 <IconButton onClick={toggleEdit}>
-                    <CloseIcon/>
+                    <SaveIcon/>
                 </IconButton>
                 </tr>
             </tbody>
@@ -156,144 +167,112 @@ const AddRow = ({noLabel, columns, list, setList}) => {
     )    
  }
 
+
+
  const ViewRow = ({columns, row, toggleEdit, copyRow, deleteRow}) => 
     <tr>
-    {columns.map(col=>
-        <td style={{maxWidth:80}}>{row[col.name]}</td>
-    )}
-    <td>
-        <IconButton onClick={toggleEdit}>
-            <EditIcon/>
-        </IconButton>
-    </td>
-    {copyRow?
+        {columns.map(col=>
+            <td style={{maxWidth:80}}>{row[col.name]}</td>
+        )}
         <td>
-            <IconButton onClick={copyRow}>
-                <CopyIcon/>
+            <IconButton onClick={toggleEdit}>
+                <EditIcon/>
             </IconButton>
         </td>
-    :
-        <td />
-    }
-    {deleteRow?
-        <td>
-            <IconButton onClick={deleteRow}>
-                <DeleteIcon/>
-            </IconButton>
-        </td>
-    :
-        <td/>
-    }
+        {copyRow?
+            <td>
+                <IconButton onClick={copyRow}>
+                    <CopyIcon/>
+                </IconButton>
+            </td>
+        :
+            <td />
+        }
+        {deleteRow?
+            <td>
+                <IconButton onClick={deleteRow}>
+                    <DeleteIcon/>
+                </IconButton>
+            </td>
+        :
+            <td/>
+        }
     </tr>
 
-
-
-const EditTable = ({horizontal, columns, list, setList}) => {
+const _EditTable = ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpdate}) => {
     const [edit, setEdit] = useState([])
     const copyRow = row => {setList([...list, row])}
     const deleteRow = index => setList(list.filter((it, idx)=> idx !==index))
+
     const toggleEdit = index => {
         if (edit.includes(index)) {
             setEdit(edit.filter(it=>it !== index))
+            triggerUpdate()
         } else {
             setEdit([...edit, index])
         }   
     }    
+    const addRow = row => {
+        setList([...list, row])
+        triggerUpdate()
+    }
     const handleRow = (row, index) => {
         setList(list.map((it, idx)=>index===idx?row:it))
     }    
 
     return(
-        list.length > 0?    
             <table>
                 <thead>
-                    <tr>
-                        {columns.map(col=>
-                            <th>{col.label}</th>
-                        )}    
-                        <th colSpan={3} />
-                    </tr>
+                        <tr>
+                            {columns.map(col=>
+                                <th>
+                                    <LabelWithSup col={col} />
+                                </th>
+                            )}    
+                            <th colSpan={3} />
+                        </tr>
                 </thead>
                 <tbody>
                 {list.map((row, index)=>
                     edit.includes(index)?
-                        horizontal?
+                        <>
+                        {verticalEdit?
                             <EditRowVertical 
                                 columns={columns} 
                                 row={list[index]} 
                                 handleRow={row=>handleRow(row, index)} 
                                 toggleEdit={()=>toggleEdit(index)} 
                             />    
-                        :    
-                            <EditRowVertical 
+                        :   
+                            <EditRowHorizontal 
                                 columns={columns} 
                                 row={list[index]} 
                                 handleRow={row=>handleRow(row, index)} 
                                 toggleEdit={()=>toggleEdit(index)} 
-                            />    
+                            />
+                        }    
+                        </>
                     :    
                         <ViewRow columns = {columns} row={row} toggleEdit={()=>toggleEdit(index)} copyRow={()=>copyRow(row)} deleteRow={()=>deleteRow(index)} />
                 )}
+                {(list.length !== 0 && ignoreAdd)?null:<AddRow columns={columns} addRow={addRow} noLabel={true} />}
                 </tbody>
             </table>
-        :null
-    )
-}
-
-const EditTableHorizontal = ({columns, list, setList}) => {
-    const [edit, setEdit] = useState([])
-    const copyRow = row => {setList([...list, row])}
-    const deleteRow = index => setList(list.filter((it, idx)=> idx !==index))
-    const toggleEdit = index => {
-        if (edit.includes(index)) {
-            setEdit(edit.filter(it=>it !== index))
-        } else {
-            setEdit([...edit, index])
-        }   
-    }    
-    const handleRow = (row, index) => {
-        setList(list.map((it, idx)=>index===idx?row:it))
-    }    
-
-    return(
-        list.length > 0?    
-            <table>
-                <thead>
-                    <tr>
-                        {columns.map(col=>
-                            <th>{col.label}</th>
-                        )}    
-                        <th colSpan={3} />
-                    </tr>
-                </thead>
-                <tbody>
-                {list.map((row, index)=>
-                    edit.includes(index)?
-                        <EditRowHorizontal 
-                            columns={columns} 
-                            row={list[index]} 
-                            handleRow={row=>handleRow(row, index)} 
-                            toggleEdit={()=>toggleEdit(index)} 
-                        />    
-                    :    
-                        <ViewRow columns = {columns} row={row} toggleEdit={()=>toggleEdit(index)} copyRow={()=>copyRow(row)} deleteRow={()=>deleteRow(index)} />
-                )}
-                <AddRow columns={columns} list={list} setList={setList} noLabel={true} />
-                </tbody>
-            </table>
-        :null
     )
 }
 
 
-// EditTableWithPicklist 
-export default ({columns, list, setList}) => {
+// EditTableWithSelect 
+export default ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpdate}) => {
     return(
         <div style={{overflowX:'auto'}}>
-            <EditTableHorizontal
+            <_EditTable
                 columns={columns} 
                 list={list}
                 setList={setList}
+                ignoreAdd={ignoreAdd}
+                verticalEdit={verticalEdit}
+                triggerUpdate={triggerUpdate}
             />
         </div>        
     )

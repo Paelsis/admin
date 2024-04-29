@@ -50,7 +50,7 @@ const CreateWorkshop = (props) => (
 
 const mapStateToProps = (state) => {
     return {
-        url:'/admin/tktable?tableName=' + TABLE_NAME,
+        url:'/tktable?tableName=' + TABLE_NAME,
         username: state.user[USERNAME],
         password: state.user[PASSWORD],
         language: state.language,

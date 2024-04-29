@@ -5,7 +5,7 @@ import config from 'Settings/config'
 import withRecords from 'Components/Table/withRecords'
 import CircularProgress from 'Components/CircularProgress'
 
-const url=config[process.env.NODE_ENV].apiBaseUrl + '/admin/scheduleChange'
+const url=config[process.env.NODE_ENV].apiBaseUrl + '/scheduleChange'
 
 const styles = {
     root:{
@@ -133,7 +133,7 @@ const mapStateToProps = (state) => {
         username: state.user.username,
         password: state.user.password,
         language: state.language,
-        url:'/admin/tktableWithoutId?tableName=v_course',
+        url:'/tktableWithoutId?tableName=v_course',
     }
 }    
 

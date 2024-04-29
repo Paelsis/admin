@@ -62,8 +62,8 @@ const mapStateToProps = (state) => {
         viewFields:VIEW_FIELDS,
         viewFieldsExpand:VIEW_FIELDS_EXPAND,
         tableUpdate:TBL_TEACHER_NOTE,
-        urlUpdate:'/admin/updateRow',
-        urlReplace:'/admin/replaceRow',
+        urlUpdate:'/updateRow',
+        urlReplace:'/replaceRow',
         updateView:UPDATE_VIEW,
         updateFields:UPDATE_FIELDS,
     }

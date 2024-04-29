@@ -71,7 +71,7 @@ const mapStateToProps = (state) => {
         tableUpdate:'tbl_partner_search',
         viewComponent:View1,
         viewFields:TAB_FIELDS,
-        urlUpdate:'/admin/updateRow',
+        urlUpdate:'/updateRow',
         updateFields:UPDATE_FIELDS,
     }
 }    

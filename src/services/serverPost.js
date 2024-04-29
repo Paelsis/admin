@@ -37,7 +37,7 @@ const serverPostApi = (apiBaseUrl, irl,  input, handleReply) => {
 
 export const addRowApi = (apiBaseUrl, tableName, row, handleReply) =>
 {
-    const irl = '/admin/replaceRow'
+    const irl = '/replaceRow'
     const value = {
         tableName,
         table:tableName,
@@ -49,7 +49,7 @@ export const addRowApi = (apiBaseUrl, tableName, row, handleReply) =>
 
 export const replaceRowApi = (apiBaseUrl, tableName, data, handleReply) =>
 {
-    const irl = '/admin/replaceRow'
+    const irl = '/replaceRow'
     const value = {
         tableName,
         table:tableName,
@@ -60,7 +60,7 @@ export const replaceRowApi = (apiBaseUrl, tableName, data, handleReply) =>
 
 export const deleteRowApi = (apiBaseUrl, tableName, id, handleReply) =>
 {
-    const url=apiBaseUrl + '/admin/deleteRow'
+    const url=apiBaseUrl + '/deleteRow'
     const value = {
         tableName,
         table:tableName, 

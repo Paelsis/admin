@@ -34,11 +34,11 @@ const mapStateToProps = (state) => {
         username: state.user.username,
         password: state.user.password,
         language: state.language,
-        url:'/admin/getOrder',
+        url:'/getOrder',
         groupByDefArr:GROUP_BY_DEF_ARR,
         viewComponent:View1,
         tableUpdate:'tbl_order_product',
-        urlUpdate:'/admin/updateRow',
+        urlUpdate:'/updateRow',
         viewFields:TAB_FIELDS,
         updateFields:UPDATE_FIELDS,
     }

@@ -226,7 +226,7 @@ export default class ScheduleCreate extends Component {
             } else {
                 //alert(JSON.stringify(crud))
                 // Post the updated data to url
-                let url=apiBaseUrl + '/admin/crud'
+                let url=apiBaseUrl + '/crud'
                 postCrud(url, this.props.username, this.props.password, this.props.tableName, crud, list=>
                 {
                     this.props.setList(list)
@@ -258,7 +258,7 @@ export default class ScheduleCreate extends Component {
         // console.log('The following will be deleted, crud', crud)
 
         // Post the updated data to url
-        let url=apiBaseUrl +'/admin/crud'
+        let url=apiBaseUrl +'/crud'
         postCrud(url, this.props.username, this.props.password, this.props.tableName, crud, list=>
         {
             // console.log('handleDeleteTemplate: list after handleDelete->postCrud:', list)
@@ -284,7 +284,7 @@ export default class ScheduleCreate extends Component {
             alert('WARNING: No template to be deleted')
         } else {
             // Post the updated data to url
-            let url=apiBaseUrl +'/admin/crud'
+            let url=apiBaseUrl +'/crud'
             const tableName = this.props.productionTable 
             postCrud(url, this.props.username, this.props.password, tableName, crud, list=>
             {
@@ -308,7 +308,7 @@ export default class ScheduleCreate extends Component {
         // console.log('The production table will be trunctaced, crud:', crud)
 
         // Post the updated data to url
-        let url=apiBaseUrl +'/admin/crud'
+        let url=apiBaseUrl +'/crud'
         postCrud(url, this.props.username, this.props.password, this.props.productionTable, crud, (list)=>
         {
             const oldListLength = this.state.prodDDownList.length;

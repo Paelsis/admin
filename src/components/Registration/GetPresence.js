@@ -57,7 +57,7 @@ const mapStateToProps = (state) => {
         language: state.language,
         url:'/getPresence?language=' + state.language,
         groupByDefArr:GROUP_BY_DEF_ARR,
-        urlUpdateAll:'/admin/updateRowsInPresence',
+        urlUpdateAll:'/updateRowsInPresence',
         viewComponent:View2,
         viewFields:VIEW_FIELDS,
         tableUpdate:'tbl_presence',

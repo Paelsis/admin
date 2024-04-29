@@ -42,13 +42,14 @@ const FIELDS_REGISTRATION = [
 const FestivalChangeRegistration =  () => {
     const [registrationOld, setRegistrationOld] = useState()
     const [registration, setRegistration] = useState()
-    const [schedule, setSchedule] = useState()
+    const [schedules, setSchedules] = useState()
     const [packages, setPackages] = useState()
     const [workshops, setWorkshops] = useState()
     const [checkedPackages, setCheckedPackages] = useState()
     const [checkedWorkshops, setCheckedWorkshops] = useState()
     const [toggleMore, setToggleMore] = useState()
 
+    const [templateName, setTemplateName] = useState()
     const [eventType, setEventType] = useState()
     const [year, setYear] = useState()
 
@@ -58,7 +59,7 @@ const FestivalChangeRegistration =  () => {
     const handleReply = reply => {
         const data = reply.data?reply.data:reply
         if (data.status === 'OK') {
-            setSchedule(data.schedule[0]?data.schedule[0]:undefined)
+            setSchedules(data.schedules[0]?data.schedules[0]:undefined)
             setPackages(data.packages?data.packages:undefined)
             setWorkshops(data.workshops?data.workshops:undefined)
             setCheckedPackages(data.checkedPackages?data.checkedPackages:undefined)
@@ -84,7 +85,7 @@ const FestivalChangeRegistration =  () => {
             workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))},
             packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))}
         } 
-        serverPost_SLIM4('/updateRegistrationFestival', data, handleReplyUpdate)
+        serverPost_SLIM4('/updateFestivalRegistration', data, handleReplyUpdate)
     }
 
 
@@ -99,7 +100,7 @@ const FestivalChangeRegistration =  () => {
 
         // alert ('registration:' +  JSON.stringify(item))
        
-        serverFetchData_SLIM4('/fetchFestival?eventType=' + reg.eventType + '&year=' + reg.year 
+        serverFetchData_SLIM4('/fetchFestivalRegistration?templateName=' + reg.templateName + '&eventType=' + reg.eventType + '&year=' + reg.year 
         + '&email=' + reg.email + '&role=' + reg.role  
         , 
         handleReply)
@@ -116,10 +117,10 @@ const FestivalChangeRegistration =  () => {
                     </>
                 :null} 
 
-                {schedule?
+                {schedules?
                     <>
                         <h1>SCHEDULE</h1>
-                        {JSON.stringify(schedule)}            
+                        {JSON.stringify(schedules[0])}            
                     </>
                 :null}
                 {packages?

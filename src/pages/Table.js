@@ -32,7 +32,7 @@ export default () => {
 
     useEffect(()=>{
         if (tableName) {
-            serverFetchData('/admin/getColumns?tableName=' + tableName, handleReply2) 
+            serverFetchData('/getColumns?tableName=' + tableName, handleReply2) 
             serverFetchData('/fetchRows?tableName=' + tableName, handleReply1)
         }
     },[tableName])

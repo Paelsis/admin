@@ -148,7 +148,7 @@ const FormField = props => {
                         }
                     </p> 
                 )
-                case 'select':
+                case '0':
                     return(
                             <p>      
                             <label style={labelStyle}>

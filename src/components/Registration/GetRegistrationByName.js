@@ -59,7 +59,7 @@ const mapStateToProps = (state) => {
         viewFields:VIEW_FIELDS,
         updateFields:UPDATE_FIELDS,
         updateView:UPDATE_VIEW,
-        urlUpdate:'/admin/updateRow',
+        urlUpdate:'/updateRow',
         tableUpdate:'tbl_reg_event_product',
     }
 }    
