@@ -28,7 +28,7 @@ function App() {
   <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route index element={<FirebaseSignin />} />
           <Route path="home" element={<Home />} />
           <Route path="*" element={<NoPage />} />
           <Route path="signin" element={<FirebaseSignin />} />

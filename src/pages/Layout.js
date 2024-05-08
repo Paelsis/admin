@@ -5,6 +5,9 @@ import { dropdownListCourse, dropdownListFestival, dropdownListOther} from "../s
 import {useState} from "react"
 import EditIcon from '@mui/icons-material/AppRegistration'
 import {IconButton} from '@mui/material';
+import ElderlyIcon from '@mui/icons-material/Elderly';
+import BackHandIcon from '@mui/icons-material/BackHand';
+import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import { useNavigate }  from 'react-router-dom';
 
 // Layout
@@ -27,8 +30,8 @@ export default () => {
     <>
     <nav className="navbar" role="navigation" aria-label="main navigation">
         <div className="navbar-brand">
-        <IconButton>
-          <EditIcon />
+        <IconButton className="button is-primary">
+          {email?<ElderlyIcon color="action" />:<SelfImprovementIcon style={{color:'hsl(171, 100%, 41%)'}} />}
         </IconButton>
         <a
             onClick={() => {
@@ -112,15 +115,12 @@ export default () => {
           <div className="navbar-end">
             <div className="navbar-item">
               <div className="buttons">
-                <a className="button is-primary">
-                  <strong>Sign up</strong>
-                </a>
                 {email?
-                  <a className="button is-light" onClick={()=>{signOut(auth); setEmail(undefined)}}>
+                  <a className="button is-dark" onClick={()=>{signOut(auth); setEmail(undefined); navigate('/signin')}}>
                     Signout
                   </a>
                 :
-                  <a className="button is-light" onClick={()=>navigate('/signin')}>
+                  <a className="button is-primary" onClick={()=>navigate('/signin')}>
                     Signin
                   </a>
                 }

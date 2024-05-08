@@ -15,7 +15,7 @@ const RenderChecklist = ({list, setList}) => {
                 <label>
                     <input type={pk.type} checked={pk.checked?true:false} name={pk.name} onChange = {e=>handleChange(index, e.target.name, e.target.checked)}/>
                 &nbsp;
-                {pk.name}&nbsp;{pk.checked?'true':'false'}    
+                {pk.name}
                 </label>
                 <br/>
                 </>

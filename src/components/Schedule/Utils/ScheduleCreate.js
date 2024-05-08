@@ -92,7 +92,7 @@ export default class ScheduleCreate extends Component {
             prodDDownList:null,
             templateDDownList:null,
             eventTypeDDownList:null,
-            buttonColor:'grey',
+            statusColor:'grey',
             dbSuccess:false,
             successText:undefined,
         }    
@@ -154,8 +154,8 @@ export default class ScheduleCreate extends Component {
     }   
 
     handleReply(templateName) {
-        this.setState({buttonColor:'green', dbSuccess:true})
-        setTimeout(() => this.setState({dbSuccess:false, successText:'', buttonColor:'grey'}), 3500);
+        this.setState({statusColor:'green', dbSuccess:true})
+        setTimeout(() => this.setState({dbSuccess:false, successText:'', statusColor:'grey'}), 3500);
         this.fetchAllDropDownLists();
         this.setState({templateName})
     }
@@ -506,7 +506,7 @@ export default class ScheduleCreate extends Component {
 
     render = () =>{
         const columns=this.props.columns
-        const buttonStyle={color:this.state.buttonColor}
+        const buttonStyle={color:this.state.statusColor}
         const dontSelectEventTypeAndYear = this.props.dontSelectEventTypeAndYear
         return(
             <div style={styles.root}>
@@ -550,7 +550,7 @@ export default class ScheduleCreate extends Component {
                     <DeleteSweepIcon style={buttonStyle} onClick={()=>this.handleTruncateTemplatesFromProduction()}/>
                 </Tooltip>
 
-                {this.state.dbSuccess?<h4 style={{color:this.state.buttonColor}}>{this.state.successText}</h4>:null}
+                {this.state.dbSuccess?<h4 style={{color:this.state.statusColor}}>{this.state.successText}</h4>:null}
                 <div style={{marginBottom:10}} />
 
                 <div>        

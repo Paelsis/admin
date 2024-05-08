@@ -40,33 +40,45 @@ const styles = {
 
 const FirebaseSignin = () => {
   const navigate = useNavigate()
-  const [buttonColor, setButtonColor] = useState({color:'white', backgroundColor:'green'})
+  const [statusColor, setStatusColor] = useState({color:'white', backgroundColor:'green'})
   const [credentials, setCredentials] = useState(undefined)
   const [uid, setUid] = useState(undefined)
   const auth = getAuth()
+
+  useEffect(()=>onAuthStateChanged(auth, user => {
+    if (user) {
+      navigate('/home')
+    }  
+  }), [])
+
   const handleSignin = e => {
     e.preventDefault()
-    setButtonColor('grey')
+    setStatusColor('grey') 
+  
+  if (credentials?(credentials.email && credentials.password):false) {
     signInWithEmailAndPassword(auth, credentials.email, credentials.password)
-    .then(userCredential => {
-      // Signed in 
-      const uid = userCredential.user.uid;
-      setUid(uid)
-      setButtonColor({color:'white', backgroundColor:'green'})
-      navigate('/home')
+      .then(userCredential => {
+        // Signed in 
+        const uid = userCredential.user.uid;
+        setUid(uid)
+        setStatusColor({color:'white', backgroundColor:'green'})
+        navigate('/home')
     })
     .catch(error => {
       const errorCode = error.code;
       const errorMessage = error.message;
-      setButtonColor('red')
+      setStatusColor('red')
       alert(error.message)
     });
+    } else {
+      alert('Fill in credentials')
+    }
   }  
 
   const handleSignout = ()=>{setUid(undefined); signOut(auth)}
-  const handleChange = e =>setCredentials({...credentials, [e.target.name]:e.target.value})
-  const inputStyle = styles.input(buttonColor)
-  const buttonStyle = styles.button(buttonColor)
+  const handleChange = e =>setCredentials({...credentials, [e.target.name]:e.target.value?e.target.value:''})
+  const inputStyle = styles.input(statusColor)
+  const buttonStyle = styles.button(statusColor)
   return(
     uid===undefined?
       <>

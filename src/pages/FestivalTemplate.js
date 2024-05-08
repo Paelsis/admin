@@ -10,12 +10,15 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import Tooltip from '@mui/material/Tooltip';
 import EditTableWithSelect from '../components/EditTableWithSelect';
-import { serverPost_SLIM4 } from '../services/serverPost';
-import { serverFetchData_SLIM4 } from '../services/serverFetch';
+import { serverPost } from '../services/serverPost';
+import { serverFetchData } from '../services/serverFetch';
+import StatusMessage from '../components/StatusMessage';
 
 const COLUMNS_SCHEDULE=[
-    {type:'textarea', label:'Name swedish', name:'nameSV',  placeholder:'Namn på svenska', required:true, cols:30, maxlength:50},     
-    {type:'textarea', label:'Name english', name:'nameEN',  placeholder:'Namn på engelska', required:true, cols:30, maxlength:50},   
+    {type:'text', label:'Festival name SV', name:'nameSV',  placeholder:'Namn på svenska', required:true, cols:30, maxlength:50,
+        tooltip:'Swedish title of the event'},   
+    {type:'text', label:'Festival name EN', name:'nameEN',  placeholder:'Namn på engelska', required:true, cols:30, maxlength:50,
+        tooltip:'English title of the event'},   
     {type:'select', 
         name:'eventType',  
         label:'Event type',
@@ -24,24 +27,34 @@ const COLUMNS_SCHEDULE=[
         selectValue:'eventType',
         required:true,
         unique:true,
+        tooltip:'Identifies on what page the event shall be shown'
     },    
-    {type:'date', label:'Startdate reg', name:'openRegDate',  required:true},    
-    {type:'time', label:'Starttime reg', name:'openRegTime',  required:true, },    
-    {type:'date', label:'Startdate', name:'startDate',  required:true, },    
-    {type:'time', label:'Starttime', name:'startTime',  required:true, },    
-    {type:'date', label:'Enddate', name:'endDate',  required:true, },    
-    {type:'time', label:'Endtime', name:'endTime',  required:true, },    
-    {type:'text', label:'Image url (url)', name:'replyImage'},    
-    {type:'number', label:'Max participants', name:'maxParticipants'},    
+    {type:'date', label:'Startdate reg', name:'openRegDate',  required:true, tooltip:'Start registration date'},    
+    {type:'time', label:'Starttime reg', name:'openRegTime',  required:true, tooltip:'Start registration time at date above'},    
+    {type:'date', label:'Startdate', name:'startDate',  required:true, tooltip:'Start date for event'},    
+    {type:'time', label:'Starttime', name:'startTime',  required:true, tooltip:'Start time for event'},    
+    {type:'date', label:'Enddate', name:'endDate',  required:true, tooltip:'End date for event'},    
+    {type:'time', label:'Endtime', name:'endTime',  required:true, tooltip:'End time for event at end date'},    
+    {type:'text', label:'Image url (url)', name:'replyImage', tooltip:'URL to the image sent in the reply mail at registration'},    
+    {type:'number', label:'Max imbalance', name:'maxImbalance', tooltip:'Max allowed imbalance between leaders and followers'},    
+    {type:'number', label:'Max participants', name:'maxParticipants', tooltip: 'Max allowed number of participants'},    
 ]
 
 
 
 const COLUMNS_PACKAGE=[
-    {type:'textarea', label:'Name (shown to customer)', name:'name',  placeholder:'Name in english', cols:30, required:true, maxlength:1000},     
-    {type:'text', label:'Shortname', name:'packageId',  placeholder:'Ex: PACKAGE_1', unique:true, required:true, maxlength:50},    
-    {type:'number', label:'Nbr of WS', name:'wsCount',  placeholder:'Ex: 5', required:true},    
-    {type:'number', label:'Minutes WS', name:'minutes',  placeholder:450, required:true},    
+    {type:'text', label:'Shortname', name:'packageId', unique:true, required:true, maxlength:50,
+          tooltip:'Per fetstival unique key to map package to registrations'},    
+    {type:'text', label:'Package name', name:'name',  cols:15, required:true, maxlength:500,
+          tooltip:'Name of the package shown in registration form'},    
+    {type:'textarea', label:'Description', name:'description',  cols:20, maxlength:1000,
+          tooltip:'Full description of the package'},
+    {type:'number', label:'Nbr of WS', name:'wsCount',  required:true,
+        tooltip:'Number of units (1,2 or 3) that this workshop has when counting for package pricing'
+    },    
+    {type:'number', label:'Minutes WS', name:'minutes',  placeholder:450, required:true,    
+        tooltip:'Number of minutes that this workshop lasts when counting for package pricing'
+    },    
     {type:'select', 
         name:'productType',  
         label:'Product-type',
@@ -50,21 +63,32 @@ const COLUMNS_PACKAGE=[
         selectValue:'productType',
         unique:true,
         required:true,
+        tooltip:'Used for counting the different tracks when makeing package pricing'
     },    
-    {type:'number', label:'Price(SEK)', name:'priceSEK',  placeholder:'Ex: 300 SEK', required:true},    
-    {type:'number', label:'Price(EUR)', name:'priceEUR',  placeholder:'Ex: 300 EUR'},    
-    {type:'checkbox', label:'Luxury pack', name:'allWorkshops'},    
-    {type: 'number', label:'Sekvens nummer', name:'sequenceNumber',  placeholder:'1,2,...N'},    
+    {type:'number', label:'Price(SEK)', name:'priceSEK', required:true,    
+        tooltip:'Price for the package in SEK'},
+    {type:'number', label:'Price(EUR)', name:'priceEUR',     
+        tooltip:'Price for the package in EUR'},
+    {type:'checkbox', label:'Luxury pack', name:'allWorkshops',    
+        tooltip:'Luxury pack includes all dancing and all workshops'},
+    {type: 'number', label:'Sekvens nummer', name:'sequenceNumber', 
+        tooltip:'Sequence number of the presentation of the pakcagein the registration form'},
 ]
 
 const COLUMNS_WORKSHOP=[
 //    {label:'Schedule', name:'scheduleId',  type:'select', tableName:'tbl_schedule_def', selectKey:'scheduleId', selectValue:'scheduleId', hidden:true},    
 //    {label:'Workshop def', name:'workshopId',  type:'select', placeholer:'tbl_workshop_def', selectKey:'workshopId', selectValue:'workshopId'},    
 //    {label:'Workshop id', name:'workshopId',  type:'text', placeholer:'Workshop Id'},    
-    {type:'textarea', label:'Name (shown to customer)', name:'name',  placeholder:'Name in english', required:true, unique:true, cols:30, maxlength:1000},    
-    {type:'text', label:'Shortname', name:'workshopId', placeholder:'Short name', unique:true, required:true, maxlength:50},    
-    {type:'number', label:'Nbr of WS', name:'wsCount', placeholder:1, required:true},  
-    {type:'number', label:'Minutes WS', name:'minutes', placeholder:90, required:true},  
+    {type:'text', label:'Shortname', name:'workshopId', unique:true, required:true, maxlength:50, 
+        tooltip:'Per festival unique key that is used to connect registration with the proper workshop'},    
+    {type:'text', label:'Workshop name', name:'name',  required:true, unique:true, cols:15, maxlength:500, 
+        tooltip:'Name of the workshop shown in the registration form '},    
+    {type:'textarea', label:'Description', name:'description',  placeholder:'Description', unique:true, cols:20, maxlength:1000, 
+        tooltip:'Name of the workshop'},    
+    {type:'number', label:'Nbr of WS', name:'wsCount', required:true, 
+        tooltip:'Number workhops this workshop shall count for in package counting (Some counts as 2 or 3)'},  
+    {type:'number', label:'Minutes WS', name:'minutes', required:true, 
+        tooltip:'The number of minutes that the workshop lasts'},  
     {type:'select', 
         name:'productType',  
         label:'Product-type',
@@ -73,9 +97,10 @@ const COLUMNS_WORKSHOP=[
         selectValue:'productType',
         unique:true,
         required:true,
+        tooltip:'Kind of workshop used for calculating package price',
     },    
-    {type:'number', label:'Price(SEK)', name:'priceSEK',  placeholder:'Ex: 300 SEK', required:true},    
-    {type:'number', label:'Price(EUR)', name:'priceEUR',  placeholder:'Ex: 300 EUR'},    
+    {type:'number', label:'Price(SEK)', name:'priceSEK',  required:true, tooltip:'Price given in SEK'},    
+    {type:'number', label:'Price(EUR)', name:'priceEUR',  tooltip:'Price given in EUR'},    
     {type:'select', 
         label:'Teacher1',
         name:'teacher1',  // Name of varible where we save data
@@ -84,6 +109,8 @@ const COLUMNS_WORKSHOP=[
         selectValue:'shortName', // Column-name in tableName that is used as value when onClick is sending its value
         unique:true,
         required:true,
+        tooltip:'Responsible first teacher of the workshop',
+
     },    
     {type:'select', 
         label:'Teacher2',
@@ -93,6 +120,7 @@ const COLUMNS_WORKSHOP=[
         selectValue:'shortName',
         unique:true,
         required:true,
+        tooltip:'Second teacher of the workshop',
     },    
     {type:'select', 
         label:'Location',
@@ -102,9 +130,10 @@ const COLUMNS_WORKSHOP=[
         selectValue:'siteId',
         required:true,
         unique:true,
+        tooltip:'Location for the workshop',
     },    
-    {type:'date', label:'Start date', name:'startDate',  placeholder:'YYYY-MM-DD', required:true},    
-    {type:'time', label:'Time', name:'startTime', placeholder:'HH:MI', required:true},    
+    {type:'date', label:'Start date', name:'startDate',  required:true, tooltip:''},    
+    {type:'time', label:'Time', name:'startTime', placeholder:'HH:MI', required:true, tooltip:''},    
 ]
 
 
@@ -187,42 +216,23 @@ const Column = ({noLabel, col, value, setValue}) => {
     )    
 }
 
-const AddRow = ({columns, list, setList}) => {
-    const [value, setValue] = useState({})
-    return(
-        <div className='columns is-bottom'>
-            {columns.map(col => 
-                <div className='column'>
-                    <Column col={col} value={value} setValue={setValue} />
-                </div>
-            )}    
-            <div className='column'>
-            <IconButton>
-                <AddIcon onClick={()=>setList([...list, value])} />
-            </IconButton>
-            </div>
-        </div>    
-    )
- }
-
-
 export default () =>
 {
-    const [templateName, setTemplateName] = useState('Default')
+    const [templateName, setTemplateName] = useState()
     const [schedules, setSchedules] = useState([])
     const [workshops, setWorkshops] = useState([])
     const [packages, setPackages] = useState([])
+    const [status, setStatus] = useState({style:{color:'white'}, message:''})
 
-    const handleReplyUpdate = data => {
+    const handleDefaultReply = data => {
+        const dt = new Date().toLocaleString()
         if (data.status?data.status === 'OK':false) {
-            setTemplateName(templateName)
+            setStatus({message:'OK:' + data.message?data.message + ' ' + dt:'Successful database operation at ' + dt})
         } else {
+            setStatus({style:{color:'red'}, message:data.message?data.message + ' ' + dt:'Failed database operation at ' + dt})
             alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
         }
     }    
-
-
-
 
     const handleUpdateAs = () => {
         const ans = prompt("Please enter templateName (Examples:SUMMER_2024 or FESTIVALITO_2024, EASTER_2025");
@@ -231,32 +241,53 @@ export default () =>
         } else {   
             const templateName = ans
             const data = {
+                templateName, 
                 schedules: [...schedules.map(it=>({...it, templateName}))], 
                 workshops:[...workshops.filter(it=>it.checked).map(it=>({...it, templateName}))],
                 packages:[...packages.filter(it=>it.checked).map(it=>({...it, templateName}))]
             }
-            serverPost_SLIM4('/updateFestivalTemplate', data, handleReplyUpdate)
+            serverPost('/updateFestivalTemplate', data, handleDefaultReply)
         }    
     }
 
 
     const handleUpdate = () => {
+        const eventType = schedules?schedules[0].eventType?schedules[0].eventType:'UNKOWN':'EMPTY'
+        const startDate = schedules?schedules[0].startDate?schedules[0].startDate:'2000-01-01':'2000-01-01'
+        const d = new Date(startDate);
+        let year = d.getFullYear();
+
         const data = {
-            schedules:schedules.map(it=>({...it, templateName})),
-            workshops:workshops.map(it=>({...it, templateName})),
-            packages:packages.map(it=>({...it, templateName}))
+            templateName, 
+            schedules:schedules.map(it=>({...it, templateName, eventType})),
+            workshops:workshops.map(it=>({...it, templateName, eventType, year})),
+            packages:packages.map(it=>({...it, templateName, eventType, year}))
         }
-        serverPost_SLIM4('/updateFestivalTemplate', data, handleReplyUpdate)
+        serverPost('/updateFestivalTemplate', data, handleDefaultReply)
     }
 
     const triggerUpdate = () => {
-        setTimeout(()=>handleUpdate()
-        , 1000);
+        setTimeout(
+            ()=>handleUpdate()
+        , 500);
     }
 
+    const handleDeleteRow = (tableName, id) => {
+        const data = {
+            tableName,
+            id
+        }
+        serverPost('/deleteRow', data, data=>handleDefaultReply(data))
+    }
     
     const handleFetchTemplateReply = data => {
         if (data.status?data.status === 'OK':false) {
+            const templateNameReturn = 
+                data.schedules.length > 0?data.schedules[0].templateName
+                :data.packages.length > 0?data.packages[0].templateName 
+                :data.workshops.length > 0?data.workshops[0].templateName
+                :'Unknown'
+            setTemplateName(templateNameReturn)
             setSchedules(data.schedules?data.schedules:[])
             setWorkshops(data.workshops)
             setPackages(data.packages)
@@ -266,12 +297,92 @@ export default () =>
     }    
    
     const handleFetchTemplate = value => {
-        setTemplateName(value)
-        serverFetchData_SLIM4('/fetchFestivalTemplate?templateName=' + value, handleFetchTemplateReply)
+        serverFetchData('/fetchFestivalTemplate?templateName=' + value, handleFetchTemplateReply)
     }    
 
-    const handleReleaseProduction = () => alert('Release all to production')
-    const handleRemoveFromProduction = () => alert('Remove from production')
+    const handleReleaseProductionReply = data => {
+        if (data.status?data.status === 'OK':false) {
+            setStatus({message:'Release successful'})
+            setTimeout(()=>{
+                setTemplateName(templateName)
+                alert(data.message?data.message:'Successful release of template')
+            }, 1000)
+        } else {
+            setStatus({style:{color:'red'}, message:data.message})
+            setTimeout(()=>{
+                setTemplateName(templateName)
+            }, 1000)
+            alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
+        }
+    }    
+
+    const handleReleaseProduction = () => {
+        const data = {
+            templateName,
+            /*
+            schedules: [...schedules.map(it=>({...it, templateName}))], 
+            workshops:[...workshops.filter(it=>it.checked).map(it=>({...it, templateName}))],
+            packages:[...packages.filter(it=>it.checked).map(it=>({...it, templateName}))]
+            */
+        }
+        serverPost('/releaseFestival', data, handleReleaseProductionReply)
+    }    
+
+    const handleDeleteTemplateProductionReply = data => {
+        if (data.status?data.status === 'OK':false) {
+            const message = data.message?data.message:'Successful delete'
+            setStatus({message})
+            setTemplateName(templateName)
+        } else {
+            const message = data.message?data.message:'Failed to delete'
+            setStatus({style:{color:'red'}, message})
+            alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
+        }
+    }    
+
+    const handleDeleteTemplateProduction = () => {
+        const defaultValue = templateName?templateName:'All'
+        const ans = window.prompt("Please enter a template name you want to remove from production (All means all templates)", defaultValue);
+        if (ans === "All") {
+            if (!window.confirm("Are you sure you want to remove all festival templates from production")) {
+                // Cancel
+                return
+            }
+        } 
+        const data = ans === "All"?{}:{templateName:ans}
+        serverPost('/deleteFestivalTemplateProduction', data, handleDeleteTemplateProductionReply)
+    }
+
+    const handleDeleteTemplateReply = data => {
+        if (data.status?data.status === 'OK':false) {
+            const message = data.message?data.message:'Successful delete'
+            setStatus({message})
+            setTemplateName(templateName)
+            setTimeout(()=>window.location.reload(), 2000)
+        } else {
+            const message = data.message?data.message:'Failed to delete'
+            setStatus({style:{color:'red'}, message})
+            alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
+        }
+    }    
+
+
+
+    const handleDeleteTemplate = () => {
+        const ans = window.prompt("Please enter a template Name you want to remove from production", templateName);
+
+        if (ans === "") {
+            return 
+        } else {    
+            if (!window.confirm("Are you sure you want to remove template " + templateName + " from template tables")) {
+                // Cancel
+                return
+            }
+        } 
+
+        const data = {templateName}
+        serverPost('/deleteFestivalTemplate', data, handleDeleteTemplateReply)
+    }
 
     return(
         <div style={{position:'relative'}}>
@@ -286,17 +397,33 @@ export default () =>
             />
             {schedules?schedules.length > 0?
                 <div className="columns is-centered">
-                    <div className='is-size-3'>{schedules[0].templateName}</div>
+                    <div className='is-size-3'>{schedules[0].templateName?schedules[0].templateName:''}</div>
                 </div>
             :null:null}    
             {schedules?schedules.length > 0?
                 <h1 className="is-size-4">Schedule for {schedules[0].eventType + ' ' + schedules[0].startDate + ' - ' + schedules[0].endDate}</h1>
             :null:null}
-            <EditTableWithSelect columns={COLUMNS_SCHEDULE} list={schedules} setList={setSchedules} ignoreAdd={true} triggerUpdate={triggerUpdate} />
+            <EditTableWithSelect 
+                columns={COLUMNS_SCHEDULE} 
+                list={schedules} 
+                setList={setSchedules} 
+                ignoreAdd={true} 
+                triggerUpdate={triggerUpdate} 
+            />
             {packages?<h1 className="is-size-4">Packages</h1>:null}
-            <EditTableWithSelect columns={COLUMNS_PACKAGE} list={packages} setList={setPackages} triggerUpdate={triggerUpdate}/>
+            <EditTableWithSelect 
+                columns={COLUMNS_PACKAGE} 
+                list={packages} setList={setPackages} 
+                triggerUpdate={triggerUpdate} 
+                triggerDelete={id=>handleDeleteRow('tbl_package_template', id)} 
+            />
             {workshops?<h1 className="is-size-4">Workshops</h1>:null}
-            <EditTableWithSelect columns={COLUMNS_WORKSHOP} list={workshops} setList={setWorkshops} triggerUpdate={triggerUpdate} />
+            <EditTableWithSelect 
+                columns={COLUMNS_WORKSHOP} 
+                list={workshops} setList={setWorkshops} 
+                triggerUpdate={triggerUpdate} 
+                triggerDelete={id=>handleDeleteRow('tbl_workshop_template', id)} 
+            />
             {schedules?   
                 <>
                     <Tooltip title='Save the data under current template name'>
@@ -307,7 +434,7 @@ export default () =>
         
                     <Tooltip title='Save the the template under a new name'>
                     <IconButton onClick={handleUpdateAs}>
-                        <SaveAsIcon />
+                        <SaveAsIcon  />
                     </IconButton>    
                     </Tooltip>    
                 
@@ -317,22 +444,22 @@ export default () =>
                     </IconButton>    
                     </Tooltip>    
                 
-                    <Tooltip title='Deleted single template from production'>
-                    <IconButton onClick={()=>alert('Delete OutlineIcon')}>
+                    <Tooltip title='Deleted single festival from template tables'>
+                    <IconButton onClick={handleDeleteTemplate}>
                         <DeleteOutlineIcon />
                     </IconButton>    
                     </Tooltip>    
                 
-                    <Tooltip title='Delete all templates from production'>
-                    <IconButton onClick={()=>alert('DeleteOutlineSweepIcon')}>
+                    <Tooltip title='Delete festial template/s from production'>
+                    <IconButton onClick={handleDeleteTemplateProduction}>
                         <DeleteSweepIcon />
                     </IconButton>    
                     </Tooltip>    
                 </>
             :null}
+            <StatusMessage style={status?status.style?status.style:{}:{}} message={status?status.message?status.message:'No message defined':'No status set'} />
         </div>
     )
-
 }
 
 /*

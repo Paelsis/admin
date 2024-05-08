@@ -2,10 +2,10 @@ import React, {useState, useEffect} from 'react';
 import {addRow, replaceRow, deleteRow} from '../services/serverPost'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
-import SaveIcon from '@mui/icons-material/Save'
 import AddIcon from '@mui/icons-material/Add';
 import EmailIcon from '@mui/icons-material/Email'
 import SearchIcon from '@mui/icons-material/Search'
+import SaveIcon from '@mui/icons-material/Save'
 import CancelIcon from '@mui/icons-material/Cancel'
 import { Tooltip, IconButton, Button} from '@mui/material';
 
@@ -22,7 +22,7 @@ const styles = {
         fontSize:22
     },
     th: {
-        color:'white',
+        color:'black',
         wordWrap:'break-word',
     },
     tr: active=>({
@@ -53,17 +53,13 @@ const Rte = ({value, handleSave}) => {
     )
 }
 
-const _RenderEdit = ({record, setRecord, buttons, columns, handleChange}) => {
-    const keys = columns?columns.map(it=>it.Field):Object.entries(record).filter(it=>it[0] !== 'id' && it[0].indexOf('Timestamp') === -1)
-    const onClick = (button, record) => {
-        if (button.toggle) {
-            setRecord(undefined)
-        }
-        button.handleClick(record)
-    }
-
-
-
+const _RenderEdit = ({columns, record, buttons, handleChange}) => {
+    const columnsTable = columns?columns:Object.entries(record).map(it => ({
+            Field:it[0],
+            type:'text'
+    }))
+    const filterFunc = it => (it.Field !== 'id' && it.Field.indexOf('Timestamp') === -1)
+    const columnsReduced = columnsTable.filter(filterFunc)
     return(
         record?
             <table>
@@ -75,16 +71,16 @@ const _RenderEdit = ({record, setRecord, buttons, columns, handleChange}) => {
                 </thead>
 
                 <tbody>
-                    {keys.map(key=>
+                    {columnsReduced.map(col=>
                         <tr>
                             <th style={styles.th}>
-                                {key}
+                                {col.Field}
                             </th>
                             <td>
-                                {TEXTAREA_FIELDS.includes(key)?
-                                    <textarea style={styles.add} rows={3} columns={50} name={key} placeholder={key} value = {record[key]} onChange={handleChange}/>
+                                {TEXTAREA_FIELDS.includes(col.Field)?
+                                    <textarea style={styles.add} rows={3} columns={50} name={col.Field} placeholder={col.Field} value = {record[col.Field]} onChange={handleChange}/>
                                 :
-                                    <input style={styles.add} type={'text'} name={key} placeholder={record[key]} value = {record[key]} onChange={handleChange}/>
+                                    <input style={styles.add} type={col.type} name={col.Field} placeholder={record[col.Field]} value = {record[col.Field]} onChange={handleChange}/>
                                 }    
                             </td>
                         </tr>
@@ -95,17 +91,17 @@ const _RenderEdit = ({record, setRecord, buttons, columns, handleChange}) => {
                             <td colSpan={2}>
                                 {buttons.map(button => 
                                     button.icon?
-                                            <IconButton onClick={()=>onClick(button, record)}>
+                                            <IconButton onClick={()=>button.onClick(button, record)}>
                                                 {button.icon}                            
                                             </IconButton>
                                     :    
-                                            <Button variant={button.variant?button.variant:'outlined'} style={{color:'white'}} onClick={()=>onClick(record)}>{button.label?button.label:'No label'}</Button>
+                                            <Button variant={button.variant?button.variant:'outlined'} style={{color:'white'}} onClick={()=>button.onClick(record)}>{button.label?button.label:'No label'}</Button>
                                 )}    
                             </td>
                         </tr>
                     :
                         <tr>
-                            <td colSpan={2}>No buttons</td>
+                            <td colSpan={2}>No buttons passed to _RenderEdit</td>
                         </tr>
                     }
                 </tbody>
@@ -140,7 +136,7 @@ const SearchValue = ({fld, search, setSearch}) => {
     return (
         fld.indexOf('Timestamp')===-1?
             <th key={fld}>
-                <input type='text' style={styles.search} size={10} name={fld} placeholder={fld} value={search[fld]} onChange={handleChange} />
+                <input type='text' style={styles.search} size={10} name={fld} placeholder={fld} value={search[fld]?search[fld]:''} onChange={handleChange} />
             </th>
         :  
             <th>
@@ -150,9 +146,15 @@ const SearchValue = ({fld, search, setSearch}) => {
     )    
     }
 
-const RenderTable = ({list, columns, filterList, handleEdit, handleDelete, search, setSearch, handleFilter, handleComment}) => {
+const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, handleDelete, search, setSearch, handleFilter, handleComment}) => {
     const keys = columns?columns.map(it=>it.Field):Object.keys(list[0])
     const filterColumns = key => keys?true:key!=='id' 
+
+    const clearFilter = () => {
+        setSearch({})
+        setTimeout(()=>setFilterList(list) ,500)
+    }
+
     return(
     <table style={{border:'1px solid lightGrey', margin:10}} >
         <thead>
@@ -164,16 +166,21 @@ const RenderTable = ({list, columns, filterList, handleEdit, handleDelete, searc
                 )}    
                 <th colSpan={2} style={styles.th}/>
             </tr>
-            {list > 5?
+            {list.length > 5?
             <tr>
                 {keys.map(it=>
                     <SearchValue fld={it} search={search} setSearch={setSearch} />
                 )}
                 {<th>
-                    <SearchIcon onClick={handleFilter} />
+                    <IconButton  onClick={handleFilter} >
+                        <SearchIcon/>
+                    </IconButton> 
                 </th>}
-
-                <th/>
+                {<th>
+                    <IconButton  onClick={()=>clearFilter()} >
+                        <CancelIcon />
+                    </IconButton> 
+                </th>}
             </tr>
             :null}
         </thead>
@@ -185,19 +192,35 @@ const RenderTable = ({list, columns, filterList, handleEdit, handleDelete, searc
                                 <div dangerouslySetInnerHTML={{__html: row[key]}} />
                             </td>
                         )}       
-                        <td><EditIcon onClick={()=>handleEdit(row)} /></td>
-                        <td><DeleteForeverIcon onClick={()=>handleDelete(row.id)} /></td>
-                    </tr>            
+                            <td>
+                                <IconButton onClick={()=>handleEdit(row)}>
+                                     <EditIcon />
+                                </IconButton>
+                            </td>
+                            <td>
+                                <IconButton  onClick={()=>handleDelete(row.id)} >
+                                    <DeleteForeverIcon/>
+                                </IconButton>
+                            </td>
+                    </tr>     
                 )
             }      
-        </tbody>    
+                <tr style={styles.tr(false)}>
+                    <td colSpan = {keys.length + 2} style={styles.td} >
+                        <IconButton>
+                            <AddIcon onClick={()=>handleEdit({})} />
+                        </IconButton>
+                    </td>                
+                </tr>       
+
+            </tbody>    
     </table>
     )
 }    
 
-const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
-    const [record, setRecord] = useState(undefined)
-    const [recordRte, setRecordRte] = useState(undefined)
+const EditTable = ({tableName, columns, list, setList, buttons}) => {
+    const [record, setRecord] = useState()
+    const [recordRte, setRecordRte] = useState()
     const [search, setSearch] = useState({})
     const [filterList, setFilterList] = useState()
 
@@ -205,7 +228,7 @@ const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
         setRecord(undefined)
         setFilterList(undefined)
         setSearch({})
-    },[tableName])
+    },[columns, list])
 
     const columnsToEmptyObject = columns => {
         let obj = {}
@@ -224,14 +247,21 @@ const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
         return foundColumn?foundColumn.Comment?foundColumn.Comment:'No help text':'No help text'
     } 
 
-    const handleDeleteReply = data => {
+    const handleDeleteReply = (data, id) => {
         if (data.status === 'OK') {
-            if (data.list !== undefined) {
+            if (data.list) {
                 setList(data.list) 
                 handleFilter(data.list)
-            } else {
-                alert('Delete successful but the reply is missing value data.list, data:' + JSON.stringify(data))    
-            }    
+            } else {    
+                let newList = []
+                if (id) {
+                    newList = list.filter(it=>it.id !== id)
+                } else {
+                    newList = list 
+                }
+                setList(newList)
+                handleFilter(newList)
+            } 
         } else {
             alert('Failed to delete row, result:' + JSON.stringify(data))    
         }
@@ -239,39 +269,44 @@ const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
 
 
     const handleDelete = id => {
-        deleteRow(tableName, id, handleDeleteReply)
+        deleteRow(tableName, id, data=>handleDeleteReply(data, id))
     }
 
-    const handleSaveReply = data => {
+    const handleReplaceReply = data => {
         if (data.status === 'OK') {
             if (data.list !== undefined) {
                 setList(data.list) 
                 handleFilter(data.list)
             } else {
-                alert('Replace successful but the reply is missing value data.list')    
+                let newList = []
+                if (record.id) {
+                    // If id exists in record, then it is an update
+                    let found = false;
+                    newList = list.map(it=>{
+                        if (record.id === it.id) {
+                            found = true
+                            return record
+                        } else {
+                            return it
+                        }    
+                    })    
+                } else {
+                    // If id does not exist in record, then it as an add
+                    let newId = data.id?data.id:list.length > 0?list[list.length-1].id+10000:10000
+                    newList = [...list, {...record, id:newId}] 
+                }
+                setList(newList)
+                handleFilter(newList)
+                setRecord(undefined)
             }    
         } else {
             alert('Failed to add row, result:' + JSON.stringify(data))    
         }
     }
 
-    const handleReplaceReply = data => {
-        if (data.status === 'OK') {
-            setList(data.list)
-            handleFilter(data.list)
-        } else {
-            alert('Failed to replace row, result:' + JSON.stringify(data))    
-        }
-    }    
 
-    const handleSave = e => {
-        if (record.id === undefined) {
-            replaceRow(tableName, record, handleSaveReply)
-        } else {
-            replaceRow(tableName, record, handleReplaceReply)
-        }   
-        // Replace row in database
-        setRecord(undefined)
+    const handleReplace = () => {
+        replaceRow(tableName, record, handleReplaceReply)
     }
 
     const handleChange = e => {
@@ -295,7 +330,7 @@ const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
             const value = it[1]
 
             if ((!key.includes('From') && !key.includes('To')) || first[key]) {
-                filterList = filterList.filter(li => li[key].includes(it[1]))
+                filterList = filterList.filter(li => li[key]?li[key].includes(it[1]):true)
             } else {
                 if (key.includes('From')) {
                     const fld = key.split('From')[0]
@@ -312,7 +347,20 @@ const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
         setFilterList(filterList)         
     }
 
+
+
     const emptyRow = columnsToEmptyObject(columns)
+
+    buttons = [
+        {
+            icon:<SaveIcon />,
+            onClick:handleReplace
+        },
+        {
+            icon:<CancelIcon />,
+            onClick:()=>setRecord()
+        },
+    ]
   
     return(
         <div style={styles.root}>
@@ -321,20 +369,18 @@ const EditTable = ({tableName, columns, buttons, list, setList, style}) => {
                     columns={columns} 
                     buttons={buttons}
                     record={record} 
-                    setRecord={setRecord}
                     handleChange={handleChange} 
                     handleChangeRte={handleChangeRte} 
-                    handleSave={handleSave} 
-                    handleCancel={handleCancel}
                 />
             :list.length > 0?
                 <>
-                    <RenderTable 
+                    <_RenderTable 
                         list={list}
                         columns={columns}
                         search={search}
-                        filterList={filterList?filterList:list} 
                         setSearch={setSearch}
+                        filterList={filterList?filterList:list} 
+                        setFilterList={setFilterList} 
                         handleFilter={()=>handleFilter(list)}
                         handleEdit={setRecord} 
                         handleDelete={handleDelete} 

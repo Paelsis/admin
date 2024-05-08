@@ -1,7 +1,7 @@
 import {useState} from 'react'
 // import { useNavigate, useParams }  from 'react-router-dom';
 import {serverFetchData_SLIM4} from '../services/serverFetch'
-import {serverPost_SLIM4} from '../services/serverPost'
+import {serverPost} from '../services/serverPost'
 import {Button, IconButton} from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -48,6 +48,7 @@ const FestivalChangeRegistration =  () => {
     const [checkedPackages, setCheckedPackages] = useState()
     const [checkedWorkshops, setCheckedWorkshops] = useState()
     const [toggleMore, setToggleMore] = useState()
+    const [statusColor, setStatusColor] = useState(false)
 
     const [templateName, setTemplateName] = useState()
     const [eventType, setEventType] = useState()
@@ -72,8 +73,11 @@ const FestivalChangeRegistration =  () => {
     const handleReplyUpdate = reply => {
         const data = reply.data?reply.data:reply
         if (data.status === 'OK') {
-            alert("Successful update. status:" + data.status + " result:" +  JSON.stringify(data))
+            setStatusColor('green')
+            setTimeout(()=>setStatusColor(undefined), 2000)
         } else {
+            setStatusColor('red')
+            setTimeout(()=>setStatusColor(undefined), 2000)
             alert('ERROR: status=' + data.status + ' message=' +  (data.message?data.message:'No message'))
         }    
     }
@@ -85,7 +89,7 @@ const FestivalChangeRegistration =  () => {
             workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))},
             packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))}
         } 
-        serverPost_SLIM4('/updateFestivalRegistration', data, handleReplyUpdate)
+        serverPost('/updateFestivalRegistration', data, handleReplyUpdate)
     }
 
 
@@ -217,7 +221,7 @@ const FestivalChangeRegistration =  () => {
                     {toggleMore===true?renderMoreOutput():null}
 
                     <IconButton onClick={handleUpdate}>
-                        <SaveIcon />
+                        <SaveIcon style = {{color:statusColor?statusColor:undefined}} />
                     </IconButton>    
                     <IconButton onClick={()=>setToggleMore(toggleMore?false:true)}>
                         {toggleMore?<UnfoldLessIcon />:<UnfoldMoreIcon />}

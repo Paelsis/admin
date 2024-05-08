@@ -69,9 +69,9 @@ function serverFetchDataApi(apiBaseUrl, irl, handleReply) {
     });
 }
 
-export const serverFetchDataResult = (irl, handleReply) => serverFetchDataResultApi(process.env.REACT_APP_API_BASE_URL, irl, handleReply)
+export const serverFetchDataResult = (irl, handleReply) => serverFetchDataResultApi(process.env.REACT_APP_API_BASE_URL_SLIM4, irl, handleReply)
 export const serverFetchDataResult_SLIM4 = (irl, handleReply) => serverFetchDataResultApi(process.env.REACT_APP_API_BASE_URL_SLIM4, irl, handleReply)
 
-export const serverFetchData = (irl, handleReply) =>  serverFetchDataApi(process.env.REACT_APP_API_BASE_URL, irl, handleReply)
+export const serverFetchData = (irl, handleReply) =>  serverFetchDataApi(process.env.REACT_APP_API_BASE_URL_SLIM4, irl, handleReply)
 export const serverFetchData_SLIM4 = (irl, handleReply) =>  serverFetchDataApi(process.env.REACT_APP_API_BASE_URL_SLIM4, irl, handleReply)
 
