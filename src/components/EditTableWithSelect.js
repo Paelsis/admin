@@ -7,7 +7,10 @@ import CopyIcon from '@mui/icons-material/ContentCopy'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
-import { Select } from './Picklist'
+import Select from './Select'
+import {isEmail} from '../services/functions'
+import { toBeDisabled } from '@testing-library/jest-dom/matchers';
+
 
 const LabelWithSup = ({col}) => {
     const supStyle = {color:'red', fontWeight:700}
@@ -18,14 +21,14 @@ const LabelWithSup = ({col}) => {
     )
 }
 
-const Column = ({noLabel, col, value, setValue, style}) => {
+const _Column = ({noLabel, col, value, setValue, style, selectCounter}) => {
     const defaultArguments = {
         type:col.type,
         name:col.name,
         placeholder:col.placeholder?col.placecolder:'',
-        checked:col.type === 'checkbox'?value[col.name]:undefined,
+        checked:col.type === 'checkbox'?value?value[col.name]==1?true:false:false:false,
         maxlength:col.maxlength,
-        value:col.type === 'checkbox'?undefined:(value[col.name]?value[col.name]:''),
+        value:col.type === 'checkbox'?(value[col.name]?1:0):(value?value[col.name]?value[col.name]:'':''),
         required:col.required,
         radioValues:col.type==='radio'?col.radioValues:undefined,
     } 
@@ -34,7 +37,8 @@ const Column = ({noLabel, col, value, setValue, style}) => {
     const selectValues = col.selectValues?col.selectValues:['ADAM', 'BERTIL', 'CESAR']
 
     const handleChange = e => {
-        setValue({...value, [e.target.name]:e.target.type==='checkbox'?e.target.checked:e.target.value})
+        const val =  e.target.type === 'checkbox'?e.target.checked?1:0:e.target.value
+        setValue({...value, [e.target.name]:val})
     }    
 
     return(
@@ -78,15 +82,22 @@ const Column = ({noLabel, col, value, setValue, style}) => {
                 <>      
                     <Select 
                         {...col}
-                        value={value[col.name]?value[col.name]:''}
+                        value={value?value[col.name]?value[col.name]:'':''}
                         handleClick={val => setValue({...value, [col.name]:val})} 
                         style={style?style:{}}
+                        selectCounter={selectCounter}
                     />
                 </>
             :col.type === 'number'?
                 <input 
                     {...defaultArguments} 
                     onChange={handleChange} size={7} 
+                    style={style?style:{}}
+                />
+            :col.type === 'checkbox'?
+                <input 
+                    {...defaultArguments} 
+                    onChange={handleChange} size={1} 
                     style={style?style:{}}
                 />
             :
@@ -104,34 +115,36 @@ const Column = ({noLabel, col, value, setValue, style}) => {
 }
 
 
-const _AddRow = ({columns, addRow, noLabel}) => {
+const _AddRow = ({columns, addRow, noLabel, disabledRow}) => {
     const [value, setValue] = useState({})
+    const disabled = disabledRow(value)
     return(
         <tr style={{fontSize:12}}>
             {columns.map(col => 
                 <td>
-                    <Column noLabel={noLabel} col={col} value={value} setValue={setValue} style={{backgroundColor:'lightYellow'}} />
+                    <_Column noLabel={noLabel} col={col} value={value} setValue={setValue} style={{backgroundColor:'lightYellow'}} />
                 </td>
             )}    
             <td colSpan={3}>
-            <IconButton onClick={()=>{addRow(value); setValue({})}}>
-                <AddIcon  />
+            <IconButton onClick={()=>addRow(value)} disabled={disabled}>
+                <AddIcon />
             </IconButton>
             </td>
         </tr>    
     )
  }
 
- const _EditRowHorizontal = ({columns, row, handleRow, toggleEdit}) => {
+ const _EditRowHorizontal = ({columns, row, handleRow, toggleEdit, disabledRow}) => {
+    const disabled = disabledRow(row)
     return(
         <tr>
             {columns.map(col => 
                 <td>
-                    <Column noLabel={true} col={col} value={row} setValue={handleRow} />
+                    <_Column noLabel={true} col={col} value={row} setValue={handleRow} />
                 </td>
             )}    
             <td colSpan={3}>
-            <IconButton onClick={toggleEdit}>
+            <IconButton onClick={toggleEdit} disabled={disabled}>
                 <SaveIcon />
             </IconButton>
             </td>
@@ -139,7 +152,8 @@ const _AddRow = ({columns, addRow, noLabel}) => {
     )    
  }
 
- const _EditRowVertical = ({columns, row, handleRow, toggleEdit}) => {
+ const _EditRowVertical = ({columns, row, handleRow, toggleEdit, disabledRow}) => {
+    const disabled = disabledRow(row)
     return(
         <div class='column is-half'>
             <table>
@@ -153,13 +167,13 @@ const _AddRow = ({columns, addRow, noLabel}) => {
                         </Tooltip>
                         <td>
 
-                        <Column noLabel={true} col={col} value={row} setValue={handleRow} />
+                        <_Column noLabel={true} col={col} value={row} setValue={handleRow} />
                         </td>
                     </tr>
                 )}    
 
                 <tr colSpan={2}>
-                <IconButton onClick={toggleEdit}>
+                <IconButton onClick={toggleEdit} disabled={disabled} style={{color:'orange'}}>
                     <SaveIcon />
                 </IconButton>
                 </tr>
@@ -207,7 +221,7 @@ const _AddRow = ({columns, addRow, noLabel}) => {
         }
     </tr>
 
-const _EditTable = ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpdate, triggerDelete}) => {
+const _EditTable = ({columns, list, setList, noAddButton, verticalEdit, handleUpdate, handleDelete, handleAdd}) => {
     const [edit, setEdit] = useState([])
     const copyRow = row => {
         const random = Math.floor(100000 + Math.random() * 900000)
@@ -215,26 +229,44 @@ const _EditTable = ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpd
     }
     const deleteRow = index => {
         setList(list.filter((it, idx)=> idx !==index))
-        triggerDelete(list[index].id)
+        handleDelete(list[index].id)
     }    
 
     const toggleEdit = index => {
         if (edit.includes(index)) {
             setEdit(edit.filter(it=>it !== index))
-            triggerUpdate()
+            handleUpdate(list)
         } else {
             setEdit([...edit, index])
         }   
     }    
 
     const addRow = row => {
-        setList([...list, row])
-        triggerUpdate()
+        const newList = [...list, row]
+        setList(newList)
+        handleAdd(newList)
     }
 
     const handleRow = (row, index) => {
         setList(list.map((it, idx)=>index===idx?row:it))
     }    
+
+    const isHidden = (col, row) => (col.hiddenIf?row[row.hiddenIf]?true:false:false) || (row.notHiddenIf?row[col.notHiddenIf]?false:true:false)
+
+    const isValidCol = (col, row) => {
+        if (isHidden(col, row)) {
+            return true
+        } else if (col.required && !row[col.name]) {
+            return false
+        } else {    
+            switch (col.type) {
+                case 'email': return isEmail(row[col.name])
+                default: return true
+            }        
+        }    
+    }
+
+    const disabledRow = row => columns.find(col => !isValidCol(col, row))
 
     return(
             <table>
@@ -261,6 +293,7 @@ const _EditTable = ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpd
                                     row={list[index]} 
                                     handleRow={row=>handleRow(row, index)} 
                                     toggleEdit={()=>toggleEdit(index)} 
+                                    disabledRow={disabledRow}
                                 />    
                             :   
                                 <_EditRowHorizontal 
@@ -268,6 +301,7 @@ const _EditTable = ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpd
                                     row={list[index]} 
                                     handleRow={row=>handleRow(row, index)} 
                                     toggleEdit={()=>toggleEdit(index)} 
+                                    disabledRow={disabledRow}
                                 />
                             }    
                         </>
@@ -279,7 +313,7 @@ const _EditTable = ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpd
                             deleteRow={()=>deleteRow(index)}
                         />
                 )}
-                {(list.length !== 0 && ignoreAdd)?null:<_AddRow columns={columns} addRow={addRow} noLabel={true} />}
+                {(list.length !== 0 && noAddButton)?null:<_AddRow columns={columns} addRow={addRow} noLabel={true} disabledRow={disabledRow} />}
                 </tbody>
             </table>
     )
@@ -287,17 +321,19 @@ const _EditTable = ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpd
 
 
 // EditTableWithSelect 
-export default ({columns, list, setList, ignoreAdd, verticalEdit, triggerUpdate, triggerDelete, statusColor}) => {
+export default ({columns, list, setList, noAddButton, verticalEdit, handleUpdate, handleDelete, handleAdd, statusColor}) => {
+
     return(
         <div style={{overflowX:'auto'}}>
             <_EditTable
                 columns={columns} 
                 list={list}
                 setList={setList}
-                ignoreAdd={ignoreAdd}
+                noAddButton={noAddButton}
                 verticalEdit={verticalEdit}
-                triggerUpdate={triggerUpdate}
-                triggerDelete={triggerDelete}
+                handleAdd={handleAdd}
+                handleUpdate={handleUpdate}
+                handleDelete={handleDelete}
                 statusColor={statusColor} 
             />
         </div>        

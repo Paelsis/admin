@@ -8,7 +8,9 @@ import SearchIcon from '@mui/icons-material/Search'
 import SaveIcon from '@mui/icons-material/Save'
 import CancelIcon from '@mui/icons-material/Cancel'
 import { Tooltip, IconButton, Button} from '@mui/material';
-
+import { cyan, red } from '@mui/material/colors';
+import { STATUS_STYLE } from '../services/constant';
+import StatusMessage from './StatusMessage';
 import ReactRte from 'react-rte';
 
 const TEXTAREA_FIELDS=['textBody']
@@ -26,7 +28,7 @@ const styles = {
         wordWrap:'break-word',
     },
     tr: active=>({
-        backgroundColor:active?active==1?'orange':'transparent':'transparent',
+        backgroundColor:active?active==1?red[200]:'transparent':'transparent',
         textDecoration:active?active==1?'none':'line-through':'none',
         opacity:active?active==1?1.0:0.4:1.0,
         wordWrap:'break-word',
@@ -148,8 +150,8 @@ const SearchValue = ({fld, search, setSearch}) => {
 
 const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, handleDelete, search, setSearch, handleFilter, handleComment}) => {
     const keys = columns?columns.map(it=>it.Field):Object.keys(list[0])
-    const filterColumns = key => keys?true:key!=='id' 
-
+    const filterFunc = key => key=='id'?false:true 
+    
     const clearFilter = () => {
         setSearch({})
         setTimeout(()=>setFilterList(list) ,500)
@@ -159,7 +161,7 @@ const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, han
     <table style={{border:'1px solid lightGrey', margin:10}} >
         <thead>
             <tr style={{color:'white', backgroundColor:'black'}}>
-                {keys.filter(filterColumns).map(it=>
+                {keys.filter(filterFunc).map(it=>
                     <Tooltip title={handleComment(it)}>  
                         <HeaderValue list={list} fld={it?it:'No name'} comment={handleComment(it)}/>
                     </Tooltip>
@@ -168,7 +170,7 @@ const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, han
             </tr>
             {list.length > 5?
             <tr>
-                {keys.map(it=>
+                {keys.filter(filterFunc).map(it=>
                     <SearchValue fld={it} search={search} setSearch={setSearch} />
                 )}
                 {<th>
@@ -186,25 +188,24 @@ const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, han
         </thead>
         <tbody>
             {filterList.map(row => 
-                    <tr style={styles.tr(row.active)}>
-                        {keys.map(key=>
-                            <td style={styles.td}>
-                                <div dangerouslySetInnerHTML={{__html: row[key]}} />
-                            </td>
-                        )}       
-                            <td>
-                                <IconButton onClick={()=>handleEdit(row)}>
-                                     <EditIcon />
-                                </IconButton>
-                            </td>
-                            <td>
-                                <IconButton  onClick={()=>handleDelete(row.id)} >
-                                    <DeleteForeverIcon/>
-                                </IconButton>
-                            </td>
-                    </tr>     
-                )
-            }      
+                <tr style={styles.tr(row.active)}>
+                    {keys.filter(filterFunc).map(key=>
+                        <td style={styles.td}>
+                            <div dangerouslySetInnerHTML={{__html: row[key]}} />
+                        </td>
+                    )}       
+                        <td style={styles.td}>
+                            <IconButton onClick={()=>handleEdit(row)}>
+                                    <EditIcon />
+                            </IconButton>
+                        </td>
+                        <td style={styles.td}>
+                            <IconButton  onClick={()=>handleDelete(row.id)} >
+                                <DeleteForeverIcon/>
+                            </IconButton>
+                        </td>
+                </tr>     
+            )}      
                 <tr style={styles.tr(false)}>
                     <td colSpan = {keys.length + 2} style={styles.td} >
                         <IconButton>
@@ -223,6 +224,7 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
     const [recordRte, setRecordRte] = useState()
     const [search, setSearch] = useState({})
     const [filterList, setFilterList] = useState()
+    const [status, setStatus] = useState({})
 
     useEffect(()=>{
         setRecord(undefined)
@@ -248,10 +250,15 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
     } 
 
     const handleDeleteReply = (data, id) => {
+        const dt = new Date().toLocaleString()
         if (data.status === 'OK') {
+            const message='Successful delete of record in table ' + tableName + ' at ' + dt
+            setStatus({style:STATUS_STYLE.OK, message})
+
             if (data.list) {
                 setList(data.list) 
                 handleFilter(data.list)
+
             } else {    
                 let newList = []
                 if (id) {
@@ -263,6 +270,9 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
                 handleFilter(newList)
             } 
         } else {
+            const message='Failed delete record in table ' + tableName + ' at ' + dt
+            setStatus({style:STATUS_STYLE.OK, message})
+
             alert('Failed to delete row, result:' + JSON.stringify(data))    
         }
     }
@@ -273,8 +283,14 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
     }
 
     const handleReplaceReply = data => {
+        const dt = new Date().toLocaleString()
         if (data.status === 'OK') {
+            const message='OK: Successful save/replace of record in table ' + tableName + ' at ' + dt
+            setStatus({style:STATUS_STYLE.OK, message})
+
             if (data.list !== undefined) {
+                const message='Successful save in table ' + tableName + ' at ' + dt
+                setStatus({style:STATUS_STYLE.OK, message})
                 setList(data.list) 
                 handleFilter(data.list)
             } else {
@@ -297,9 +313,13 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
                 }
                 setList(newList)
                 handleFilter(newList)
+
+
                 setRecord(undefined)
             }    
         } else {
+            const message='ERROR: Failed to add row in table ' + tableName + ' at ' + dt
+            setStatus({style:STATUS_STYLE.ERROR, message})
             alert('Failed to add row, result:' + JSON.stringify(data))    
         }
     }
@@ -388,6 +408,7 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
                     />
                 </>
             :<h1>List is empty</h1>}
+            <StatusMessage status={status} />
         </div>
     )
 }

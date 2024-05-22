@@ -16,31 +16,28 @@ code {
     monospace;
 }
 
-
-.container {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-}
-
 table {
 	border-collapse: collapse;
 	overflow: auto;
-	box-shadow: 0 0 20px rgba(0,0,0,0.1);
-	color:green;
+	box-shadow: 0 10px 10px rgba(0,0,0,0.3);
 }
 
 th {
 	padding: 15px;
-	background:whitesmoke;
-	color:yellow;
+	/* background:lightgrey;*/
+	color:red;
+	margin:20px;
 }
 
 td {
 	padding: 15px;
-	background: whitesmoke; /* linear-gradient(45deg, #49a09d, #5f2c82);*/
+	margin:20px;
+	/*background: whitesmoke; /* linear-gradient(45deg, #49a09d, #5f2c82);*/
 	color: black;
+}
+
+a {
+	text-decoration:underline;
 }
 
 

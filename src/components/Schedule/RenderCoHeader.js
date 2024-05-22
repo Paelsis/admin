@@ -111,7 +111,7 @@ const _renderHeaderLarge = (course, handleClick, language) =>
         <td colSpan={5} style={styles.tdTitle}>
             {course['name' + language]} 
         </td>
-        {descButton(course, language, handleClick) }
+        <Button />
     </tr>    
     <tr style={styles.trTitleSubtext}>
         <td colSpan={3} style={styles.tdTitleSubtext}>

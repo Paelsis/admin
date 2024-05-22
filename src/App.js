@@ -6,8 +6,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from "./pages/Home"
 import Layout from "./pages/Layout"
 import FirebaseSignin from './signin/FirebaseSignin';
-import SchemaCourse from "./pages/SchemaCourse"
+import CourseSchema from "./pages/CourseSchema"
+import CourseTemplate from "./pages/CourseTemplate"
+import CourseCreateRegistration from "./pages/CourseCreateRegistration"
 import FestivalTemplate from "./pages/FestivalTemplate"
+import FestivalCreateRegistration from "./pages/FestivalCreateRegistration"
 import FestivalChangeRegistration from "./pages/FestivalChangeRegistration"
 import Other from "./pages/Other"
 import Table from "./pages/Table"
@@ -34,12 +37,15 @@ function App() {
           <Route path="signin" element={<FirebaseSignin />} />
           {email?
             <>
+              <Route path="courseTemplate" element={<CourseTemplate />} />
+              <Route path="courseCreateRegistration" element={<CourseCreateRegistration />} />
               <Route path="festivalTemplate" element={<FestivalTemplate />} />
+              <Route path="festivalCreateRegistration" element={<FestivalCreateRegistration />} />
               <Route path="festivalChangeRegistration" element={<FestivalChangeRegistration />} />
               <Route path="other" element={<Other />} />
               <Route path="table/:tableName" element={<Table />} />
               <Route path="register" element={<Register />} />
-              <Route path="schemaCourse" element={<SchemaCourse />} />
+              <Route path="courseSchema" element={<CourseSchema />} />
             </>
           :null}
         </Route>

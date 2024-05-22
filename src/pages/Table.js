@@ -4,6 +4,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import ViewTable from '../components/ViewTable'
 import EditTable from '../components/EditTable'
 import EditTableWithSelect from '../components/EditTableWithSelect'
+import Progress from '../components/CirkularProgress'
 
 export default () => {
     const location = useLocation()
@@ -41,7 +42,9 @@ export default () => {
 
     return(
             <div>
-                {list&&columns?<EditTable tableName={tableName} columns={columns} list={list} setList={setList} />:<h1>Nothing</h1>}
+                {list&&columns?<EditTable tableName={tableName} columns={columns} list={list} setList={setList} />:<Progress />}
             </div>
     )
 }
+
+

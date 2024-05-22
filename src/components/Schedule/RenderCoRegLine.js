@@ -3,6 +3,7 @@ import Weekdays from 'Settings/Weekdays';
 import RegistrationButton from '../School/Registration/RegistrationButton'
 import ExpandTextDialog from 'Components/ExpandTextDialog';
 import {LANGUAGE_SV, LANGUAGE_ES, LANGUAGE_EN} from 'redux/actions/actionsLanguage'
+import Button from '@mui/material/Button';
 
 const ZOOM_URL = 'https://zoom.us/join'
 
@@ -43,7 +44,7 @@ const DateTd = ({course, language}) => {
 }
 
 // RenderCoRegLine
-export default ({course, color, language}) => {
+export default ({course, color, language, onClick}) => {
     const range = course.startTime + '-' + course.endTime 
     const weekend = course.courseType === 'HK'
     const adjColor = course.started?color:color    
@@ -66,6 +67,10 @@ export default ({course, color, language}) => {
         color:'yellow',
       }, 
     }  
+
+    const onClick = () => {
+        alert('Handle Registration XXX')
+    }
 
     return(
         <tr style={styles.tr}>
@@ -90,7 +95,7 @@ export default ({course, color, language}) => {
                     {renderExpandedAddress(course)}
                 </ExpandTextDialog>     
             </td>  
-            <td><RegistrationButton style={styles.button} reg={course} /></td>          
+            <td><Button variant='outlined' onClick={onClick}/></td>
         </tr>
 
     )

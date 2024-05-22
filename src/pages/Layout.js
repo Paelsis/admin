@@ -59,14 +59,14 @@ export default () => {
             <Link to={'/home'} className="navbar-item">
               Home
             </Link>
-            <Link to={'/table/tbl_teacher'} className="navbar-item">
-                  Teacher
-            </Link>
 
             <Link to={'/table/tbl_site'} className="navbar-item">
                   Site
             </Link>
 
+            <Link to={'/table/tbl_teacher'} className="navbar-item">
+                  Teacher
+            </Link>
 
             <div className="navbar-item has-dropdown is-hoverable">
               <a className="navbar-link">

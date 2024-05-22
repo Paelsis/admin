@@ -2,8 +2,11 @@ import {isNormalVariable} from '../services/functions'
 
 const styles = {
     container:{
+        /*
         overflow:'auto',
-        margin:'auto',
+        marginLeft:'auto',
+        marginRight:'auto',
+        */
     },
 }
 
@@ -12,7 +15,7 @@ export default ({cols, list, buttons}) => {
     const colons = cols?cols:list.length > 0?Object.keys(list[0]).filter(key=>isNormalVariable(list[0][key])):[]
     return(
     list?    
-    <div style={styles.container}>
+    <div className='container'>
         <table>
             <thead>
                 <tr>

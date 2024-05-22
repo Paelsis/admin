@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { STATUS_STYLE } from '../services/constant';
 
 const STATIC_STYLE = {
   position:'fixed', 
@@ -12,16 +13,16 @@ const STATIC_STYLE = {
   backgroundColor:'green'
 } 
 
-export default ({timeout, style, message}) => {
+export default ({timeout, status}) => {
     const [msg, setMsg]=useState(undefined)    
     useEffect(() => {
-        setMsg(message)
+        setMsg(status.message)
         const timer = setTimeout(() => {
           setMsg(undefined);
         }, timeout?timeout:2000);
         return () => clearTimeout(timer);
-    }, [message]); 
-    const myStyle = style?style:{}
+    }, [status.message]); 
+    const myStyle = status.style?status.style:STATUS_STYLE.DEFAULT
     return (
       msg?<div style={{...STATIC_STYLE, ...myStyle}}>{msg}</div>:null
     );

@@ -1,5 +1,6 @@
 import {useState} from 'react'
-import Picklist, {Select} from '../components/Picklist'
+import Picklist from '../components/Picklist'
+import Select from '../components/Select'
 import {Button, IconButton} from '@mui/material';
 import SaveIcon from '@mui/icons-material/SaveOutlined'
 import SaveAsIcon from '@mui/icons-material/SaveAsOutlined';
@@ -13,6 +14,8 @@ import EditTableWithSelect from '../components/EditTableWithSelect';
 import { serverPost } from '../services/serverPost';
 import { serverFetchData } from '../services/serverFetch';
 import StatusMessage from '../components/StatusMessage';
+import {STATUS_STYLE} from '../services/constant'
+
 
 const COLUMNS_SCHEDULE=[
     {type:'text', label:'Festival name SV', name:'nameSV',  placeholder:'Namn på svenska', required:true, cols:30, maxlength:50,
@@ -40,15 +43,13 @@ const COLUMNS_SCHEDULE=[
     {type:'number', label:'Max participants', name:'maxParticipants', tooltip: 'Max allowed number of participants'},    
 ]
 
-
-
 const COLUMNS_PACKAGE=[
     {type:'text', label:'Shortname', name:'packageId', unique:true, required:true, maxlength:50,
-          tooltip:'Per fetstival unique key to map package to registrations'},    
+          tooltip:'Unieue package key that is used to map package to registrations'},    
     {type:'text', label:'Package name', name:'name',  cols:15, required:true, maxlength:500,
           tooltip:'Name of the package shown in registration form'},    
     {type:'textarea', label:'Description', name:'description',  cols:20, maxlength:1000,
-          tooltip:'Full description of the package'},
+          tooltip:'Full description of the contents of the package'},
     {type:'number', label:'Nbr of WS', name:'wsCount',  required:true,
         tooltip:'Number of units (1,2 or 3) that this workshop has when counting for package pricing'
     },    
@@ -222,55 +223,89 @@ export default () =>
     const [schedules, setSchedules] = useState([])
     const [workshops, setWorkshops] = useState([])
     const [packages, setPackages] = useState([])
-    const [status, setStatus] = useState({style:{color:'white'}, message:''})
+    const [status, setStatus] = useState({})
+    const [reloadCounter, setReloadCounter] = useState(0)
 
     const handleDefaultReply = data => {
         const dt = new Date().toLocaleString()
         if (data.status?data.status === 'OK':false) {
-            setStatus({message:'OK:' + data.message?data.message + ' ' + dt:'Successful database operation at ' + dt})
+            setReloadCounter(reloadCounter+1)
+            setStatus({style:STATUS_STYLE.OK, message:'OK:' + data.message?data.message + ' ' + dt:'Successful database operation at ' + dt})
         } else {
-            setStatus({style:{color:'red'}, message:data.message?data.message + ' ' + dt:'Failed database operation at ' + dt})
+            setStatus({style:STATUS_STYLE.ERROR, message:data.message?data.message + ' ' + dt:'Failed database operation at ' + dt})
             alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
         }
     }    
 
     const handleUpdateAs = () => {
-        const ans = prompt("Please enter templateName (Examples:SUMMER_2024 or FESTIVALITO_2024, EASTER_2025");
+
+        const ans = window.prompt("Please enter templateName (Examples:SUMMER_2024 or FESTIVALITO_2024, EASTER_2025", templateName);
         if (ans === null) {
             alert('Nothing saved')
         } else {   
-            const templateName = ans
+            setTemplateName(ans)
             const data = {
-                templateName, 
-                schedules: [...schedules.map(it=>({...it, templateName}))], 
-                workshops:[...workshops.filter(it=>it.checked).map(it=>({...it, templateName}))],
-                packages:[...packages.filter(it=>it.checked).map(it=>({...it, templateName}))]
+                templateName:ans, 
+                schedules: [...schedules.map(it=>({...it, id:undefined, templateName:ans}))], 
+                workshops:[...workshops.filter(it=>it.checked).map(it=>({...it, id:undefined, templateName:ans}))],
+                packages:[...packages.filter(it=>it.checked).map(it=>({...it, id:undefined, templateName:ans}))]
             }
             serverPost('/updateFestivalTemplate', data, handleDefaultReply)
         }    
     }
 
 
-    const handleUpdate = () => {
-        const eventType = schedules?schedules[0].eventType?schedules[0].eventType:'UNKOWN':'EMPTY'
-        const startDate = schedules?schedules[0].startDate?schedules[0].startDate:'2000-01-01':'2000-01-01'
+    const handleUpdate = () => {        
+        let ans = templateName
+        if (!templateName) {
+            ans = window.prompt("Please enter the desired template name");
+            if (ans === "") {
+                return 
+            } else {    
+                setTemplateName(ans)
+            } 
+        } 
+
+        const eventType = schedules?schedules[0]?schedules[0].eventType?schedules[0].eventType:'UNKOWN':'UNKOWN_1':'UNKOWN_2'
+        const startDate = schedules?schedules[0]?schedules[0].startDate?schedules[0].startDate:'2000-01-01':'2000-01-02':'2000-01-03'
+        const d = new Date(startDate);
+        let year = d.getFullYear();
+
+        const data = {
+            templateName:ans, 
+            schedules:schedules.map(it=>({...it, templateName:ans, eventType})),
+            workshops:workshops.map(it=>({...it, templateName:ans, eventType, year})),
+            packages:packages.map(it=>({...it, templateName:ans, eventType, year}))
+        }
+        serverPost('/updateFestivalTemplate', data, handleDefaultReply)
+    }
+
+    const handleAddPackages = list => {
+        const eventType = schedules?schedules[0]?schedules[0].eventType?schedules[0].eventType:'UNKOWN':'UNKOWN_1':'UNKOWN_2'
+        const startDate = schedules?schedules[0]?schedules[0].startDate?schedules[0].startDate:'2000-01-01':'2000-01-02':'2000-01-03'
         const d = new Date(startDate);
         let year = d.getFullYear();
 
         const data = {
             templateName, 
-            schedules:schedules.map(it=>({...it, templateName, eventType})),
-            workshops:workshops.map(it=>({...it, templateName, eventType, year})),
-            packages:packages.map(it=>({...it, templateName, eventType, year}))
+            packages:list.map(it=>({...it, templateName, eventType, year}))
         }
         serverPost('/updateFestivalTemplate', data, handleDefaultReply)
     }
 
-    const triggerUpdate = () => {
-        setTimeout(
-            ()=>handleUpdate()
-        , 500);
+    const handleAddWorkshops = list => {
+        const eventType = schedules?schedules[0]?schedules[0].eventType?schedules[0].eventType:'UNKOWN':'UNKOWN_1':'UNKOWN_2'
+        const startDate = schedules?schedules[0]?schedules[0].startDate?schedules[0].startDate:'2000-01-01':'2000-01-02':'2000-01-03'
+        const d = new Date(startDate);
+        let year = d.getFullYear();
+
+        const data = {
+            templateName, 
+            workshops:list.map(it=>({...it, templateName, eventType, year})),
+        }
+        serverPost('/updateFestivalTemplate', data, handleDefaultReply)
     }
+
 
     const handleDeleteRow = (tableName, id) => {
         const data = {
@@ -302,16 +337,17 @@ export default () =>
 
     const handleReleaseProductionReply = data => {
         if (data.status?data.status === 'OK':false) {
-            setStatus({message:'Release successful'})
+            setStatus({style:STATUS_STYLE.OK, message:'Release successful'})
             setTimeout(()=>{
                 setTemplateName(templateName)
+                setReloadCounter(reloadCounter+1)
                 alert(data.message?data.message:'Successful release of template')
             }, 1000)
         } else {
-            setStatus({style:{color:'red'}, message:data.message})
+            setStatus({style:STATUS_STYLE.ERROR, message:data.message})
             setTimeout(()=>{
                 setTemplateName(templateName)
-            }, 1000)
+            }, 21000)
             alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
         }
     }    
@@ -331,11 +367,12 @@ export default () =>
     const handleDeleteTemplateProductionReply = data => {
         if (data.status?data.status === 'OK':false) {
             const message = data.message?data.message:'Successful delete'
-            setStatus({message})
+            setStatus({status:STATUS_STYLE.OK, message})
             setTemplateName(templateName)
+            setReloadCounter(reloadCounter+1)
         } else {
             const message = data.message?data.message:'Failed to delete'
-            setStatus({style:{color:'red'}, message})
+            setStatus({style:STATUS_STYLE.ERROR, message})
             alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
         }
     }    
@@ -356,12 +393,16 @@ export default () =>
     const handleDeleteTemplateReply = data => {
         if (data.status?data.status === 'OK':false) {
             const message = data.message?data.message:'Successful delete'
-            setStatus({message})
-            setTemplateName(templateName)
-            setTimeout(()=>window.location.reload(), 2000)
+            setReloadCounter(reloadCounter+1)
+            setStatus({status:STATUS_STYLE.OK, message})
+            setSchedules([])
+            setPackages([])
+            setWorkshops([])
+            setTemplateName(undefined)
+            // setTimeout(()=>window.location.reload(), 2000)
         } else {
             const message = data.message?data.message:'Failed to delete'
-            setStatus({style:{color:'red'}, message})
+            setStatus({style:STATUS_STYLE.ERROR, message})
             alert('ERROR: Message:' +  data.message?data.message:JSON.stringify(data))
         }
     }    
@@ -388,18 +429,19 @@ export default () =>
         <div style={{position:'relative'}}>
             <Picklist 
                 labelButton='Template' 
-                tableName='tbl_workshop_template' 
+                tableName='tbl_event_template' 
                 labelName='templateName' 
                 valueName='templateName' 
                 value={templateName} 
                 handleClick={handleFetchTemplate} unique={true} 
                 close={true} // Close after pick
+                reloadCounter={reloadCounter}
             />
-            {schedules?schedules.length > 0?
+            {templateName?
                 <div className="columns is-centered">
-                    <div className='is-size-3'>{schedules[0].templateName?schedules[0].templateName:''}</div>
+                    <div className='is-size-3'>{templateName}</div>
                 </div>
-            :null:null}    
+            :null}    
             {schedules?schedules.length > 0?
                 <h1 className="is-size-4">Schedule for {schedules[0].eventType + ' ' + schedules[0].startDate + ' - ' + schedules[0].endDate}</h1>
             :null:null}
@@ -407,57 +449,61 @@ export default () =>
                 columns={COLUMNS_SCHEDULE} 
                 list={schedules} 
                 setList={setSchedules} 
-                ignoreAdd={true} 
-                triggerUpdate={triggerUpdate} 
+                noAddButton={true} 
+                handleUpdate={handleUpdate} 
             />
             {packages?<h1 className="is-size-4">Packages</h1>:null}
             <EditTableWithSelect 
                 columns={COLUMNS_PACKAGE} 
-                list={packages} setList={setPackages} 
-                triggerUpdate={triggerUpdate} 
-                triggerDelete={id=>handleDeleteRow('tbl_package_template', id)} 
+                list={packages} 
+                setList={setPackages} 
+                handleUpdate={handleUpdate} 
+                handleDelete={id=>handleDeleteRow('tbl_package_template', id)} 
+                handleAdd={handleAddPackages}
             />
             {workshops?<h1 className="is-size-4">Workshops</h1>:null}
             <EditTableWithSelect 
                 columns={COLUMNS_WORKSHOP} 
-                list={workshops} setList={setWorkshops} 
-                triggerUpdate={triggerUpdate} 
-                triggerDelete={id=>handleDeleteRow('tbl_workshop_template', id)} 
+                list={workshops} 
+                setList={setWorkshops} 
+                handleUpdate={handleUpdate} 
+                handleDelete={id=>handleDeleteRow('tbl_workshop_template', id)} 
+                handleAdd={handleAddWorkshops}
             />
             {schedules?   
                 <>
-                    <Tooltip title='Save the data under current template name'>
+                    <Tooltip title='Save the festival template'>
                         <IconButton onClick={handleUpdate}>
                             <SaveIcon />
                         </IconButton>    
                     </Tooltip>    
         
-                    <Tooltip title='Save the the template under a new name'>
+                    <Tooltip title='Save the the festival template under a new name'>
                     <IconButton onClick={handleUpdateAs}>
                         <SaveAsIcon  />
                     </IconButton>    
                     </Tooltip>    
                 
-                    <Tooltip title='Release the current template to production'>
+                    <Tooltip title='Release the current festival template to production'>
                     <IconButton onClick={handleReleaseProduction}>
                         <MoveUpIcon />
                     </IconButton>    
                     </Tooltip>    
                 
-                    <Tooltip title='Deleted single festival from template tables'>
+                    <Tooltip title='Deleted festival template from table with templates'>
                     <IconButton onClick={handleDeleteTemplate}>
                         <DeleteOutlineIcon />
                     </IconButton>    
                     </Tooltip>    
                 
-                    <Tooltip title='Delete festial template/s from production'>
+                    <Tooltip title='Delete festival template/s from production'>
                     <IconButton onClick={handleDeleteTemplateProduction}>
                         <DeleteSweepIcon />
                     </IconButton>    
                     </Tooltip>    
                 </>
             :null}
-            <StatusMessage style={status?status.style?status.style:{}:{}} message={status?status.message?status.message:'No message defined':'No status set'} />
+            <StatusMessage status={status} />
         </div>
     )
 }
