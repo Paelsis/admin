@@ -2,12 +2,12 @@ import {useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom"
 import {isNormalVariable} from '../services/functions'
 import {serverFetchData} from "../services/serverFetch"
-import ViewGroupRecursive from "./ViewGroupRecursive"
+import {GroupByFlat} from "./GroupByRecursive"
 import CirkularProgress from './CirkularProgress'
 
 
 
-// ViewSchema
+// CourseSchema
 export default  ({url, groupByArr, cols}) => {
     const [list, setList] = useState()
     const handleReply = data => {
@@ -26,7 +26,7 @@ export default  ({url, groupByArr, cols}) => {
     return(
         <div>
             {list?
-                <ViewGroupRecursive depth={0} groupByArr={groupByArr} cols={cols} list={list} />
+                <GroupByFlat depth={0} groupByArr={groupByArr} cols={cols} list={list} />
             :
                 <CirkularProgress color={'green'} style={{margin:'auto'}} />
             }

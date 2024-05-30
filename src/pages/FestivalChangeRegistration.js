@@ -1,6 +1,6 @@
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 // import { useNavigate, useParams }  from 'react-router-dom';
-import {serverFetchData_SLIM4} from '../services/serverFetch'
+import {serverFetchData, serverFetchData_SLIM4} from '../services/serverFetch'
 import {serverPost} from '../services/serverPost'
 import {Button, IconButton} from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save'
@@ -40,6 +40,7 @@ const FIELDS_REGISTRATION = [
 
 
 const FestivalChangeRegistration =  () => {
+    const [registrations, setRegistrations] = useState()
     const [registrationOld, setRegistrationOld] = useState()
     const [registration, setRegistration] = useState()
     const [schedules, setSchedules] = useState()
@@ -49,6 +50,7 @@ const FestivalChangeRegistration =  () => {
     const [checkedWorkshops, setCheckedWorkshops] = useState()
     const [toggleMore, setToggleMore] = useState()
     const [statusColor, setStatusColor] = useState(false)
+    const [list, setList] = useState()
 
     const [templateName, setTemplateName] = useState()
     const [eventType, setEventType] = useState()
@@ -56,6 +58,22 @@ const FestivalChangeRegistration =  () => {
 
     const [email, setEmail] = useState()
     const [role, setRole] = useState()
+
+    const handleReplyFetchRegistrations = reply => {
+        const data = reply.data?reply.data:reply
+        if (data.status === 'OK') {
+            setRegistrations(data.result.map(it=>({...it, label:it.firstName + ' ' + it.lastName + ' ' + it.email})))
+        } else {
+            alert('ERROR: Status:' + data.status + ' Message:' +  data.message)
+        }   
+    }
+
+    useEffect(()=>{
+        serverFetchData('/fetchRows?tableName=tbl_registration_festival&UPPER=3000', handleReplyFetchRegistrations) 
+    }, [])
+
+    const groups = registrations?Object.groupBy(registrations, it=>it.eventType + ' ' + it.year):undefined
+    const keys = groups?Object.keys(groups):undefined
 
     const handleReply = reply => {
         const data = reply.data?reply.data:reply
@@ -174,45 +192,39 @@ const FestivalChangeRegistration =  () => {
         )
     }    
 
+    const sortFunc = (a,b) => {
+        let ret
+        if ((ret = a.firstName.localeCompare(b.firstName)) !==0) {
+            return ret
+        } else if ((ret = a.lastName.localeCompare(b.lastName)) !==0) {
+            return ret
+        } else {
+            return 0
+        }
+    }
+
     return(
         <div style = {{with:'200vw', textAlign:'left'}}>
             <div className='columns is-centered' >
+                {groups? 
                 <div className='column'>
-                    <Picklist 
-                        labelButton='Easter'
-                        tableName={'v_registration_easter'} 
-                        labelName='label' 
-                        // valueName={'id'} 
-                        value={registration} 
-                        handleClick={handleClick}
-                        close={true}
-                    />
+                    {keys.map(key=>
+                        <>
+                            <Picklist 
+                                labelButton={key}
+                                picklist = {groups[key].sort(sortFunc)}
+                                labelName='label' 
+                                value={registration} 
+                                handleClick={handleClick}
+                                close={true}
+                            />
+                        </>
+                    )}
                 </div>
-                <div className='column'>
-                    <Picklist 
-                        labelButton='Summer'
-                        tableName={'v_registration_summer'} 
-                        labelName='label' 
-                        // valueName={'id'} 
-                        value={registration} 
-                        handleClick={handleClick}
-                        close={true}
-                    />
-                </div>
-                <div className='column'>
-                    <Picklist 
-                        labelButton='Festivalito'
-                        tableName={'v_registration_festivalito'} 
-                        labelName='label' 
-                        // valueName={'value'} 
-                        value={registration} 
-                        handleClick={handleClick}
-                        close={true}
-                    />
-                </div>
-
-                
+                :null}
             </div>
+
+         
 
             {registration?
                 <>

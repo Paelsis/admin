@@ -18,22 +18,25 @@ const TEXTAREA_FIELDS=['textBody']
 const styles = {
     root:{
         margin:'auto',
-        overflow:'auto'
+        overflow:'auto',
+        paddingBottom:20, 
+        paddingLeft:20,
     },
     table:{
-        fontSize:22
-    },
-    th: {
-        color:'black',
-        wordWrap:'break-word',
+        fontSize:22,
+        padding:20
     },
     tr: active=>({
-        backgroundColor:active?active==1?red[200]:'transparent':'transparent',
-        textDecoration:active?active==1?'none':'line-through':'none',
-        opacity:active?active==1?1.0:0.4:1.0,
+        // textDecoration:active?'none':'line-through',
+        fontStyle:active?'normal':'italic',
+        opacity:active?1.0:0.6,
+        backgroundColor:active?'lightGrey':'whitesmoke',
         wordWrap:'break-word',
-        width:20
+        width:20,
     }),
+    th:{
+        color:'white'
+    },
     td: {
         wordWrap:'break-word',
         maxLength:20
@@ -68,7 +71,7 @@ const _RenderEdit = ({columns, record, buttons, handleChange}) => {
                 <thead>
                     <tr>
                         <th style={styles.th}>Name</th>
-                        <th style={styles.th} >Value</th>
+                        <th style={styles.th}>Value</th>
                     </tr>
                 </thead>
 
@@ -119,7 +122,7 @@ const maillist = (list, fld) => list.map(it => it[fld]?it[fld]:'').join(', ')
 const HeaderValue = ({list, fld, comment}) => 
     fld.indexOf('email')===-1?
         <Tooltip title={<h2>{comment}</h2>}>
-            <th size={10} key={fld} style={styles.th}>
+            <th style={styles.th} size={10} key={fld}>
                 {fld}
             </th>
         </Tooltip>
@@ -138,12 +141,12 @@ const SearchValue = ({fld, search, setSearch}) => {
     return (
         fld.indexOf('Timestamp')===-1?
             <th key={fld}>
-                <input type='text' style={styles.search} size={10} name={fld} placeholder={fld} value={search[fld]?search[fld]:''} onChange={handleChange} />
+                <input type='text' size={10} name={fld} placeholder={fld} value={search[fld]?search[fld]:''} onChange={handleChange} />
             </th>
         :  
             <th>
-                <input type='text' style={styles.search} size={10} name={fld + 'From'} placeholder={fld + 'From'} value={search[fld + 'From']} onChange={handleChange} />
-                <input type='text' style={styles.search} size={10}name={fld + 'To'} placeholder={fld + 'To'} value={search[fld + 'To']} onChange={handleChange} />
+                <input type='text' size={10} name={fld + 'From'} placeholder={fld + 'From'} value={search[fld + 'From']} onChange={handleChange} />
+                <input type='text' size={10}name={fld + 'To'} placeholder={fld + 'To'} value={search[fld + 'To']} onChange={handleChange} />
             </th>
     )    
     }
@@ -158,15 +161,15 @@ const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, han
     }
 
     return(
-    <table style={{border:'1px solid lightGrey', margin:10}} >
+    <table>
         <thead>
-            <tr style={{color:'white', backgroundColor:'black'}}>
+            <tr>
                 {keys.filter(filterFunc).map(it=>
                     <Tooltip title={handleComment(it)}>  
                         <HeaderValue list={list} fld={it?it:'No name'} comment={handleComment(it)}/>
                     </Tooltip>
                 )}    
-                <th colSpan={2} style={styles.th}/>
+                <th colSpan={2} />
             </tr>
             {list.length > 5?
             <tr>

@@ -5,7 +5,7 @@ const styleDefault = {textAlign:'center', color:'yellow', margin:'auto', width:'
 
 
 
-export const ViewGroupRecursiveNoClick = ({depth, groupByArr, cols, list, buttons}) => {
+export const GroupByRecursiveNoClick = ({depth, groupByArr, cols, list, buttons}) => {
     const [open, setOpen] = useState()
     const recursionReady = (depth === groupByArr.length) 
     const groupBy = !recursionReady?groupByArr[depth].groupBy:undefined
@@ -22,7 +22,7 @@ export const ViewGroupRecursiveNoClick = ({depth, groupByArr, cols, list, button
                     {open?(open===key)?
                         <>
                             {groups[key]?(depth === groupByArr.length -1)?<ViewTable cols={cols} buttons={buttons} list={groups[key]} />:null:null}
-                            {!recursionReady?<ViewGroupRecursiveNoClick depth={depth+1} groupByArr={groupByArr} cols={cols} list={groups[key]} buttons={buttons}/>:null}
+                            {!recursionReady?<GroupByRecursiveNoClick depth={depth+1} groupByArr={groupByArr} cols={cols} list={groups[key]} buttons={buttons}/>:null}
                         </>
                     :null:null}
                 </div>
@@ -35,8 +35,8 @@ export const ViewGroupRecursiveNoClick = ({depth, groupByArr, cols, list, button
 
 
 
-export const ViewGroupRecursiveFlat = props => {
-    const {depth, groupByArr, list} = props
+export const GroupByFlat = props => {
+    const {depth, groupByArr, list, language} = props
     const recursionReady = (depth === groupByArr.length) 
 
     if (recursionReady) {
@@ -52,8 +52,8 @@ export const ViewGroupRecursiveFlat = props => {
         return(
             Object.keys(groups).map(key=>
                 <div className={className}>
-                    {RenderView?<RenderView key={key} depth={depth} groupByArr={groupByArr} list={groups[key]} />:null}    
-                    <ViewGroupRecursiveFlat depth={depth+1} groupByArr={groupByArr} list={groups[key]} />
+                    {RenderView?<RenderView key={key} depth={depth} groupByArr={groupByArr} list={groups[key]} language={language} />:null}    
+                    <GroupByFlat depth={depth+1} groupByArr={groupByArr} list={groups[key]} language={language} />
                 </div>
             )
         )
@@ -61,8 +61,8 @@ export const ViewGroupRecursiveFlat = props => {
 }    
 
 
-export const ViewGroupRecursive = props => {
-    const {depth, groupByArr, list} = props
+export const GroupByRecursive = props => {
+    const {depth, groupByArr, list, language} = props
     const [open, setOpen] = useState()
     const recursionReady = (depth === groupByArr.length) 
 
@@ -81,11 +81,11 @@ export const ViewGroupRecursive = props => {
                 <div className={className}>
                     {(!open||open===key)?
                         <div onClick={()=>handleClick(key)}>
-                            {RenderView?<RenderView key={key} depth={depth} groupByArr={groupByArr} list={groups[key]} />:null}    
+                            {RenderView?<RenderView key={key} depth={depth} groupByArr={groupByArr} list={groups[key]} language={language} />:null}    
                         </div>
                     :null}
                     {open?(open===key)?
-                        <ViewGroupRecursive depth={depth+1} groupByArr={groupByArr} list={groups[key]} />
+                        <GroupByRecursive depth={depth+1} groupByArr={groupByArr} list={groups[key]} language={language} />
                     :null:null}
                 </div>
             )
@@ -111,7 +111,7 @@ const RenderHeader = ({firstListItem, groupByItem, style}) => {
     )    
 }
 
-export const OLDViewGroupRecursive = ({depth, groupByArr, cols, list, buttons}) => {
+export const OLDGroupByRecursive = ({depth, groupByArr, cols, list, buttons}) => {
     const [open, setOpen] = useState()
     const recursionReady = (depth === groupByArr.length) 
 
@@ -136,7 +136,7 @@ export const OLDViewGroupRecursive = ({depth, groupByArr, cols, list, buttons}) 
                         </div>
                     :null}
                     {open?(open===key)?
-                        <ViewGroupRecursive depth={depth+1} groupByArr={groupByArr} cols={cols} list={groups[key]} buttons={buttons}/>
+                        <GroupByRecursive depth={depth+1} groupByArr={groupByArr} cols={cols} list={groups[key]} buttons={buttons}/>
                     :null:null}
                 </div>
             )
@@ -144,6 +144,6 @@ export const OLDViewGroupRecursive = ({depth, groupByArr, cols, list, buttons}) 
     }
 }    
 
-export default ViewGroupRecursive
+export default GroupByRecursive
 
 

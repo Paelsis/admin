@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import Picklist from '../components/Picklist'
+import Picklist, {PicklistGroupBy} from '../components/Picklist'
 import Select from '../components/Select'
 import {Button, IconButton} from '@mui/material';
 import SaveIcon from '@mui/icons-material/SaveOutlined'
@@ -427,11 +427,12 @@ export default () =>
 
     return(
         <div style={{position:'relative'}}>
-            <Picklist 
+            <PicklistGroupBy 
                 labelButton='Template' 
                 tableName='tbl_event_template' 
                 labelName='templateName' 
                 valueName='templateName' 
+                groupBy='eventType'
                 value={templateName} 
                 handleClick={handleFetchTemplate} unique={true} 
                 close={true} // Close after pick

@@ -1,6 +1,7 @@
 html,
 body {
   margin: 0;
+  background-color:whitesmoke;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -8,6 +9,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 	font-family: sans-serif;
 	font-weight: 300;
+	min-height:100vw;
   /* width:100%;*/
 }
 
@@ -25,15 +27,15 @@ table {
 th {
 	padding: 15px;
 	/* background:lightgrey;*/
-	color:red;
+	color:whitesmoke;
+	background-color:lightslategrey;
+	word-wrap:break-word;
 	margin:20px;
 }
 
 td {
 	padding: 15px;
 	margin:20px;
-	/*background: whitesmoke; /* linear-gradient(45deg, #49a09d, #5f2c82);*/
-	color: black;
 }
 
 a {

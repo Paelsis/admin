@@ -2,7 +2,7 @@
 
 
 
-const AddRegisttrationTemplate = () =>
+const CreateAddRegisttrationTemplate = () =>
 {
 
 

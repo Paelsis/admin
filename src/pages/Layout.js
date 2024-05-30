@@ -1,4 +1,5 @@
 import {useEffect} from 'react'
+import {useSharedState} from '../store'
 import { getAuth, onAuthStateChanged, signOut} from 'firebase/auth';
 import { Outlet, Link } from "react-router-dom";
 import { dropdownListCourse, dropdownListFestival, dropdownListOther} from "../services/dropdownLists";
@@ -13,6 +14,8 @@ import { useNavigate }  from 'react-router-dom';
 // Layout
 export default () => {
   const [isActive, setIsActive] = useState(false)
+  const [sharedState, setSharedState] = useSharedState()
+  const language = sharedState.language
   const [email, setEmail] = useState()
   const handleLogin = () => alert('handleLogin')
   const navigate = useNavigate()
@@ -23,12 +26,11 @@ export default () => {
     }  
   }), [])
 
-  
-
+  const setLanguage = language => setSharedState({...sharedState, language})
 
   return (
     <>
-    <nav className="navbar" role="navigation" aria-label="main navigation">
+    <nav className="navbar" role="navigation" aria-label="main navigation" style={{backgroundColor:'whiteSmoke'}}>
         <div className="navbar-brand">
         <IconButton className="button is-primary">
           {email?<ElderlyIcon color="action" />:<SelfImprovementIcon style={{color:'hsl(171, 100%, 41%)'}} />}
@@ -82,6 +84,7 @@ export default () => {
               </div>
             </div>
 
+
             <div className="navbar-item has-dropdown is-hoverable">
               <a className="navbar-link">
                 Festival
@@ -95,6 +98,22 @@ export default () => {
                 )}
               </div>
             </div>
+
+            <div className="navbar-item has-dropdown is-hoverable">
+              <a className="navbar-link">
+                {language==='SV'?'Svenska':'English'}
+              </a>
+
+              <div className="navbar-dropdown">
+                <a className="navbar-item" onClick={()=>setLanguage('SV')}>
+                  Svenska
+                </a>
+                <a className="navbar-item" onClick={()=>setLanguage('EN')}>
+                  English
+                </a>
+              </div>
+            </div>
+
 
             <div className="navbar-item has-dropdown is-hoverable">
               <a className="navbar-link">

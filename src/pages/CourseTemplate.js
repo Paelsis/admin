@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import Picklist, {Select} from '../components/Picklist'
+import Picklist, {PicklistGroupBy, Select} from '../components/Picklist'
 import {Button, IconButton} from '@mui/material';
 import SaveIcon from '@mui/icons-material/SaveOutlined'
 import SaveAsIcon from '@mui/icons-material/SaveAsOutlined';
@@ -65,7 +65,7 @@ const COLUMNS_COURSE = [
     },    
     {type:'date', label:'Startdatum', name:'startDate', placeholder:'YYYY-MM-DD', required:true, tooltip:'Start date for the course'},    
     {type:'time', label:'Tid', name:'startTime', placeholder:'HH:MI', required:true, tooltip:'Starttime when the course is given'},    
-    {type:'date', label:'Slutdatum', name:'endDate', placeholder:'YYYY-MM-DD', tooltip:'End date for the course (course hidden on web-page after this date)'},    
+    {type:'date', label:'Slutdatum', name:'endDate', placeholder:'YYYY-MM-DD', tooltip:'Course is not displayed on homepage 2 days after this date'},    
     {type:'checkbox', label:'Online', name:'online', tooltip:'Check this box if the course is given online on Zoom'},    
     {type:'number', label:'Max leaders', name:'maxLeader', tooltip:'Upper limit for leaders'},    
     {type:'number',  label:'Max followers', name:'maxFollower', tooltip:'Upper limit for followers'},    
@@ -271,9 +271,10 @@ export default () =>
 
     return(
         <div style={{position:'relative'}}>
-            <Picklist 
+            <PicklistGroupBy 
                 labelButton='Template' 
                 tableName='tbl_course_template' 
+                groupBy={'year'}
                 labelName='templateName' 
                 valueName='templateName' 
                 value={templateName} 

@@ -233,6 +233,10 @@ const TEXTS = {
         ES:'Currently there is an imbalance with a surprise of followers, so registration is right now only open for couples or leaders',
         EN:'Currently there is an imbalance with a surprise of followers, so registration is right now only open for couples or leaders',
     },
+    PAY_FOR_PARTNER:{
+      SV:'Jag önskar betala även för min danspartner',
+      EN:'I also want to pay for my dance-partner'
+    }
 }
 const required = (value, allValues, props) => value ? undefined: TEXTS.REQUIRED[props.language]
 
@@ -640,7 +644,8 @@ let RegistrationForm = (props) => {
                 <Field name="newsletter" 
                   label={TEXTS.NEWSLETTER[language]}
                   type='checkbox' 
-                  component={renderCheckbox} />
+                  component={renderCheckbox}
+                />
 
                 <p />
                 {mustHavePartner?
@@ -664,6 +669,12 @@ let RegistrationForm = (props) => {
                       {reg.noEmailPartner===true?<h2>{TEXTS.PARTNER_MUST_REGISTER_SEPARATELY[language]}</h2>:null}
                     </i>  
                     <p />
+                    <Field name="payForPartner" 
+                      label={TEXTS.PAY_FOR_PARTNER[language]}
+                      type='checkbox' 
+                      component={renderCheckbox}
+                    />
+
                     <Field name="firstNamePartner" 
                       label={TEXTS.FIRST_NAME_PARTNER[language]}
                       type='text'
@@ -732,7 +743,7 @@ let RegistrationForm = (props) => {
                     >
                       {TEXTS.BUTTON_GO_BACK[language]}
                     </Button>
-                    <QrCode price={reg.price} message={message} />
+                    <QrCode price={reg.payForPartner?reg.price*2:reg.price} message={message} />
                 </div>
               </form>
           </div>

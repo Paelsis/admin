@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import ViewSchema from '../components/ViewSchema'
+import CourseSchema from '../components/UNUSED_CourseSchema'
 import { useNavigate }  from 'react-router-dom';
 
 const groupByArr = [
@@ -35,7 +35,7 @@ export default () => {
         {
             label:'Anmälan',
             type:'button',
-            onClick:course=>navigate('/register', {state:course})
+            onClick:course=>navigate('/registration', {state:course})
         },
         {
             label:'Alert Record',
@@ -45,6 +45,6 @@ export default () => {
     
     ]
         return(
-        <ViewSchema url={'/scheduleCourse'} groupByArr={groupByArr} buttons={buttons} cols={cols}/>
+        <CourseSchema url={'/scheduleCourse'} groupByArr={groupByArr} buttons={buttons} cols={cols}/>
     )
 }

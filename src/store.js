@@ -1,8 +1,8 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import {search} from './services/search'
+import React, { createContext, useState, useContext } from 'react';
 
 const initialState = {
     pageName:'',
+    language:'EN'
 };
 
 const useMyState = () => useState(initialState);
