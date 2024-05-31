@@ -10,13 +10,14 @@ const styles = {
 }
 
 const dayName = [
-    {SV:'Ingen dow 0', EN:'No dow 0'},
+    {SV:'No dow 0', EN:'No dow 0'},
     {SV:'Måndag', EN: 'Monday'},
     {SV:'Tisdag', EN: 'Tuesday'},
     {SV:'Onsdag', EN: 'Wednesday'},
     {SV:'Torsdag', EN: 'Thursday'},
     {SV:'Fredag', EN: 'Friday'},
     {SV:'Lördag', EN: 'Saturday'},
+    {SV:'Söndag', EN:'Sunday'},
 ]
 
 const TEXT = {
@@ -320,22 +321,52 @@ export default () => {
     const [sharedState, ] = useSharedState()
     const language = sharedState.language
     const reg = state?
-        {...state, ...value, avaStatusText:undefined, leader:convertRoleToLeader(value.role)}
+        {...state, ...value, avaStatusText:undefined, leader:convertRoleToLeader(value.role), language}
     :
-        {...value, avaStatusText:undefined, leader:convertRoleToLeader(value.role)}
+        {...value, avaStatusText:undefined, leader:convertRoleToLeader(value.role), language}
 
 
     const handleTestResult = reply => {
         if (reply.status === 'OK') {
+            // In developkment environment we cannot send mail
             setReply(reply)
-            // alert(JSON.stringify(reply))
         } else {
             const message = reply.message
-            alert('ERROR: Failed to fetch  ' + message)
+            setReply(reply)
+            alert('ERROR: Failed to create test mail. Message:' + message)
         }
     }
 
-    const {mailBodyToCourseLeader, mailSubjectToCustomer, mailBodyToCustomer} = reply
+    const handleSendMailReply = reply => {
+        if (reply.status === 'OK') {
+            if (process.env.NODE_ENV === 'development') {
+                // In developkment environment we cannot send mail
+                setReply(reply)
+            }
+        } else {
+            const message = reply.message
+            if (process.env.NODE_ENV === 'development') {
+                // In developkment environment we cannot send mail
+                setReply(reply)
+            } else {
+                alert('ERROR: Failed to send mail. Message:' + message)
+                setReply({})
+            }
+        }
+    }
+
+
+    const {mailSubjectToCourseLeader, mailBodyToCourseLeader, mailSubjectToCustomer, mailBodyToCustomer} = reply
+
+    const handleRegistrationReply = reply => {
+        const data = reply.data?reply.data:reply
+        if (data.status === 'OK') {
+            serverPost('/sendMailReg', reg, handleSendMailReply)
+        } else {
+            alert('ERROR:failed to register, message:' + JSON.stringify(data.message))
+        }
+    }
+
 
     const buttons=[
         {
@@ -347,6 +378,7 @@ export default () => {
             handleClick:e=>{
                 e.preventDefault()
                 alert(JSON.stringify(reg))
+                serverPost('/courseRegistration', reg, handleRegistrationReply)
             }    
         },
         {
@@ -366,14 +398,14 @@ export default () => {
             validate:true,
             handleClick:e=>{
                 e.preventDefault()
-                serverPost('/testRegMail', {...reg, language}, handleTestResult)
+                serverPost('/testRegMail', reg, handleTestResult)
             }    
         },
 
     ]
 
     const fields = fieldsFunc(language)   
-    const dayOfWeek = state?state.dayOfWeekday?state.dayOfWeek:0:0 
+    const dayOfWeek = state?state.dayOfWeek?state.dayOfWeek:0:0 
     return(
         <>
         {state?
@@ -393,11 +425,13 @@ export default () => {
                     />
                     <h3>Left to do: Send register data to databaseCreate a form and add course+form data to tbl_register</h3>
                     <div style={styles.object}>
-                        <div className="title is-3">Mail body course leader</div>
+                        <div className="title is-4">Mail subject course leader</div>
+                        <div dangerouslySetInnerHTML={{__html: JSON.stringify(mailSubjectToCourseLeader)}} />
+                        <div className="title is-5">Mail body course leader</div>
                         <div dangerouslySetInnerHTML={{__html: JSON.stringify(mailBodyToCourseLeader)}} />
-                        <div className="title is-3">Mail subject to customer</div>
+                        <div className="title is-4">Mail subject to customer</div>
                         <div dangerouslySetInnerHTML={{__html: JSON.stringify(mailSubjectToCustomer)}} />
-                        <div className="title is-3">Mail body to customer</div>
+                        <div className="title is-5">Mail body to customer</div>
                         <div dangerouslySetInnerHTML={{__html: JSON.stringify(mailBodyToCustomer)}} />
 
                         <h4>Input Data</h4>
