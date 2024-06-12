@@ -17,7 +17,7 @@ const getField = column => {
 // FormTemplate.js
 // FormTemplate.js
 export default props => {
-    const {fields, buttons, value, setValue} = props
+    const {fields, buttons, value, setValue, children} = props
     const handleKeyPress = e => {
         if (e.key === 'Enter' && !!props.handlePressEnter) {
             props.handlePressEnter()
@@ -34,7 +34,7 @@ export default props => {
             return false
         } else {    
             switch (fld.type) {
-                case 'email': return isEmail(value[fld.name])
+                case 'email': return value?value[fld.name]?isEmail(value[fld.name]):true:true
                 default: return true
             }        
         }    
@@ -45,7 +45,6 @@ export default props => {
         <div>   
                 <form>
                     <div>
-                        {props.children}
                         {fields.filter(fld=>!isHidden(fld)).map((fld, index) => 
                             <Tooltip 
                                 title={<h4 style={{textAlign:'left' , fontSize:20, fontWeight:900, color:'white'}}>{fld.tooltip}</h4>}
@@ -62,7 +61,7 @@ export default props => {
                     :
                         null
                     }    
-
+                    {props.children}
                     {buttons?
                         <div style={{paddingTop:20, paddingBottom:20}}>
                             {buttons.map(button =>
@@ -71,11 +70,13 @@ export default props => {
                                     enterDelay={500} 
                                     open={button.tooptip?undefined:false}
                                 >
-                                <span style={button.style}>
+                                <span>
                                     {
                                         <Button 
                                             type={button.type} 
                                             variant={button.variant?button.variant:"outlined"}
+                                            sx={button.sx}
+                                            style={button.style}
                                             color={"inherit"}
                                             disabled={button.disabled?true:button.validate?isValid:false}
                                             onClick={button.handleClick}

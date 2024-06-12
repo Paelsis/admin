@@ -21,14 +21,18 @@ code {
 table {
 	border-collapse: collapse;
 	overflow: auto;
-	box-shadow: 0 10px 10px rgba(0,0,0,0.3);
+	box-shadow: 0 5px 5px rgba(0,0,0,0.3);
+}
+
+thead {
+	color:white;
 }
 
 th {
 	padding: 15px;
 	/* background:lightgrey;*/
 	color:whitesmoke;
-	background-color:lightslategrey;
+	background-color:slategray;
 	word-wrap:break-word;
 	margin:20px;
 }

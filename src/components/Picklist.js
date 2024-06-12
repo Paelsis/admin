@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import {serverFetchData_SLIM4} from "../services/serverFetch"
+import {serverFetchData} from "../services/serverFetch"
 import {uniqueObjectList} from "../services/functions"
 
 export const PicklistGroupBy = ({labelButton, picklist, tableName, groupBy, labelName, valueName, value, handleClick, unique, close, reloadCounter}) => {
@@ -20,7 +20,7 @@ export const PicklistGroupBy = ({labelButton, picklist, tableName, groupBy, labe
             setList(unique?uniqueObjectList(picklist, labelName):picklist)
         } else if (tableName) {
             const url = '/fetchRows?tableName=' + tableName
-            serverFetchData_SLIM4(url, handleReply)
+            serverFetchData(url, handleReply)
         } else {
             alert('No tableName and inputList')    
         }    
@@ -93,7 +93,7 @@ export default ({labelButton, picklist, tableName, labelName, valueName, value, 
             setList(unique?uniqueObjectList(picklist, labelName):picklist)
         } else {    
             const url = '/fetchRows?tableName=' + tableName
-            serverFetchData_SLIM4(url, handleReply)
+            serverFetchData(url, handleReply)
         }    
     }, [tableName, reloadCounter?reloadCounter:0])
 

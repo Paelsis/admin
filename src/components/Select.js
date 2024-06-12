@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import {serverFetchData_SLIM4} from "../services/serverFetch"
+import {serverFetchData} from "../services/serverFetch"
 import {uniqueObjectList} from "../services/functions"
 
 const Select =  ({tableName, name, selectLabel, selectValue, value, handleClick, unique, style, reloadCounter}) => {
@@ -17,7 +17,7 @@ const Select =  ({tableName, name, selectLabel, selectValue, value, handleClick,
 
     useEffect(()=>{
         const url = '/fetchRows?tableName=' + tableName
-        serverFetchData_SLIM4(url, handleReply)
+        serverFetchData(url, handleReply)
     }, [tableName, reloadCounter?reloadCounter:0])
 
     const onClick = (e, val) => {

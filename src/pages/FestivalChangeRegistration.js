@@ -1,47 +1,31 @@
 import {useState, useEffect} from 'react'
-// import { useNavigate, useParams }  from 'react-router-dom';
-import {serverFetchData, serverFetchData_SLIM4} from '../services/serverFetch'
-import {serverPost} from '../services/serverPost'
+import {useSharedState} from '../store'
 import {Button, IconButton} from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save'
-import CancelIcon from '@mui/icons-material/Cancel'
-import Picklist from '../components/Picklist'
-import ViewTable from '../components/ViewTable'
-import FormTemplate from '../components/FormTemplate'
-import RenderChecklist from '../components/RenderChecklist'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 
-    
-const FIELDS_REGISTRATION = [
-    {
-        label:'Name (first name)',
-        name:'firstName',
-        type:'text',
-    },
-    {
-        label:'Sirname (last name)',
-        name:'lastName',
-        type:'text',
-    },
-    {
-        label:'email',
-        name:'email',
-        type:'email', 
-    },
-    {
-        label:'Dance role',
-        name:'role',
-        type:'radio',
-        radioValues:[{label:'Leader', value:'LEADER'}, {label:'Follower', value:'FOLLOWER'}, {label:'Both', value:'BOTH'}],
-    }
-]
-    
+// import { useNavigate, useParams }  from 'react-router-dom';
+import {serverFetchData} from '../services/serverFetch'
+import {serverPost} from '../services/serverPost'
+// import SaveIcon from '@mui/icons-material/Save'
+// import CancelIcon from '@mui/icons-material/Cancel'
+import Picklist from '../components/Picklist'
+import ViewTable from '../components/ViewTable'
+import FormTemplate from '../components/FormTemplate'
+import {ChecklistWorkshop, ChecklistPackage} from '../components/Checklist'
+import {TEXT, registrationFields} from '../services/text'
+
+const styles = {
+    button:{},
+    buttonOK:{color:'white', backgroundColor:'green', borderColor:'green'},
+    buttonERROR:{color:'white', backgroundColor:'red', borderColor:'red'}
+}
 
 
 const FestivalChangeRegistration =  () => {
+    const [sharedState, ] = useSharedState()
+    const language = sharedState.language
     const [registrations, setRegistrations] = useState()
-    const [registrationOld, setRegistrationOld] = useState()
     const [registration, setRegistration] = useState()
     const [schedules, setSchedules] = useState()
     const [packages, setPackages] = useState()
@@ -49,8 +33,7 @@ const FestivalChangeRegistration =  () => {
     const [checkedPackages, setCheckedPackages] = useState()
     const [checkedWorkshops, setCheckedWorkshops] = useState()
     const [toggleMore, setToggleMore] = useState()
-    const [statusColor, setStatusColor] = useState(false)
-    const [list, setList] = useState()
+    const [status, setStatus] = useState()
 
     const [templateName, setTemplateName] = useState()
     const [eventType, setEventType] = useState()
@@ -75,89 +58,83 @@ const FestivalChangeRegistration =  () => {
     const groups = registrations?Object.groupBy(registrations, it=>it.eventType + ' ' + it.year):undefined
     const keys = groups?Object.keys(groups):undefined
 
-    const handleReply = reply => {
-        const data = reply.data?reply.data:reply
-        if (data.status === 'OK') {
-            setSchedules(data.schedules[0]?data.schedules[0]:undefined)
-            setPackages(data.packages?data.packages:undefined)
-            setWorkshops(data.workshops?data.workshops:undefined)
-            setCheckedPackages(data.checkedPackages?data.checkedPackages:undefined)
-            setCheckedWorkshops(data.checkedWorkshops?data.checkedWorkshops:undefined)
-        } else {
-            alert('ERROR: Status:' + data.status + ' Message:' +  data.message)
-        }   
-    }
-
-    const handleReplyUpdate = reply => {
-        const data = reply.data?reply.data:reply
-        if (data.status === 'OK') {
-            setStatusColor('green')
-            setTimeout(()=>setStatusColor(undefined), 2000)
-        } else {
-            setStatusColor('red')
-            setTimeout(()=>setStatusColor(undefined), 2000)
-            alert('ERROR: status=' + data.status + ' message=' +  (data.message?data.message:'No message'))
-        }    
-    }
-
-    const handleUpdate = () => {
-        const data = {
-            registrationOld,
-            registration, 
-            workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))},
-            packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role}))}
-        } 
-        serverPost('/updateFestivalRegistration', data, handleReplyUpdate)
-    }
-
-
-
-
-    const handleClick = item => {
-        // alert(JSON.stringify(item.email))
-        const reg = {...item, label:undefined}
-        setRegistrationOld(reg)
-        setRegistration(reg)
-
-
-        // alert ('registration:' +  JSON.stringify(item))
-       
-        serverFetchData_SLIM4('/fetchFestivalRegistration?templateName=' + reg.templateName + '&eventType=' + reg.eventType + '&year=' + reg.year 
-        + '&email=' + reg.email + '&role=' + reg.role  
-        , 
-        handleReply)
-    }
-
-
-
     const renderOutput = () => {
-        return(
-            <>
-                {registration?
-                    <>
-                        <FormTemplate fields = {FIELDS_REGISTRATION} value={registration} setValue={setRegistration} />
-                    </>
-                :null} 
+       
+        const handleReplyUpdate = reply => {
+            const data = reply.data?reply.data:reply
+            if (data.status === 'OK') {
+                const orderId = registration?registration.orderId?registration.orderId:9999999:8888888
+                setStatus('OK')
+                setTimeout(()=>setStatus(undefined), 2000)
+                // alert("Modified registration successfully. Order id =" + orderId)
+            } else if (data.status === 'ERROR') {
+                setStatus('ERROR')
+                setTimeout(()=>setStatus(undefined), 2000)
+                alert('ERROR: status=' + data.status + ' message=' +  (data.message?data.message:'No message'))
+            } else {
+                setStatus('ERROR')
+                setTimeout(()=>setStatus(undefined), 2000)
+                alert('ERROR: Problems with response, data:' + JSON.stringify(data))
+            }   
+        }
+    
+        const handleUpdate = () => {
+            const eventType = schedules?schedules[0]?schedules[0].eventType:undefined:undefined
+            const dateRange = schedules?schedules[0]?schedules[0].dateRange:undefined:undefined 
+            const year = schedules?schedules[0]?schedules[0].year:undefined:undefined
+    
+            const data = {
+                id:registration.id, 
+                registration:{...registration, id:undefined, eventType, dateRange, year}, 
+                workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))},
+                packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))}
+            } 
+            serverPost('/updateFestivalRegistration', data, handleReplyUpdate)
+        }
 
-                {schedules?
-                    <>
-                        <h1>SCHEDULE</h1>
-                        {JSON.stringify(schedules[0])}            
-                    </>
-                :null}
-                {packages?
-                    <>
-                        <h1>PACKAGES</h1>
-                        <RenderChecklist list={packages} setList={setPackages} />
-                    </>
-                :null}
-                {workshops?
-                    <>
-                        <h1>WORKSHOPS</h1>
-                        <RenderChecklist list={workshops} setList={setWorkshops} />
-                    </>
-                :null}
-            </>
+        const buttons= [
+            {
+                variant:status==='OK'?'contained':'outlined',
+                style:status==='OK'?styles.buttonOK:status==='ERROR'?styles.buttonERROR:styles.button,
+                label:TEXT.save.label[language],
+                tooltip:TEXT.save.tooltip[language],
+                title:TEXT.save.tooltip[language],
+                validate:true,
+                handleClick:handleUpdate
+            },
+            {
+                variant:'outlined',
+                label:TEXT.cancel.label[language],
+                tooltip:TEXT.cancel.tooltip[language],
+                title:TEXT.cancel.tooltip[language],
+                handleClick:setSchedules
+            }
+        ]
+    
+        return(
+            <div className='columns is-centered'>
+                <div className='column is-4'>
+                    {schedules?
+                        <>
+                            <h1 className="title is-3">{registration?(registration.eventType + ' ' + registration.year):"No title"}</h1>
+                            <FormTemplate fields = {registrationFields(language)} value={registration?registration:{}} setValue={setRegistration} buttons={buttons}>
+                                {packages?
+                                    <>
+                                        <h5 className='title is-5'>Packages</h5>
+                                        <ChecklistPackage list={packages?packages:[]} setList={setPackages} language={language} />
+                                    </>
+                                :null} 
+                                {workshops?   
+                                    <>
+                                        <h5 className='title is-5'>Workshops</h5>
+                                        <ChecklistWorkshop list={workshops?workshops:[]} setList={setWorkshops} language={language} />
+                                    </>
+                                :null}    
+                            </FormTemplate>    
+                        </>
+                    :null} 
+                </div>
+            </div>    
         )    
     }
 
@@ -179,7 +156,7 @@ const FestivalChangeRegistration =  () => {
                 {workshops?
                     <>
                         <h1>WORKSHOPS</h1>
-                        <ViewTable cols={['name', 'productId', 'checked']} list={workshops} />
+                        <ViewTable cols={['name', 'productId', 'checked', 'startDate', 'dayOfWeek']} list={workshops} />
                     </>
                 :null}
                 {checkedWorkshops?
@@ -203,6 +180,39 @@ const FestivalChangeRegistration =  () => {
         }
     }
 
+    const handleReply = reply => {
+        const data = reply.data?reply.data:reply
+        if (data.status === 'OK') {
+            setSchedules(data.schedules?data.schedules:undefined)
+            setPackages(data.packages?data.packages:undefined)
+            setWorkshops(data.workshops?data.workshops:undefined)
+            setCheckedPackages(data.checkedPackages?data.checkedPackages:undefined)
+            setCheckedWorkshops(data.checkedWorkshops?data.checkedWorkshops:undefined)
+        } else {
+            setPackages(undefined)
+            setWorkshops(undefined)
+            setCheckedPackages(undefined)
+            setCheckedWorkshops(undefined)
+            alert('ERROR: Status:' + data.status + ' Message:' +  data.message)
+        }   
+    }
+
+
+    const handleClick = item => {
+        // alert(JSON.stringify(item.email))
+        const reg = {...item, label:undefined}
+
+        setRegistration(reg)
+        setToggleMore(undefined)
+
+        // alert ('registration:' +  JSON.stringify(item))
+       
+        serverFetchData('/fetchFestivalRegistration?templateName=' + reg.templateName + '&eventType=' + reg.eventType + '&year=' + reg.year 
+        + '&email=' + reg.email + '&role=' + reg.role  
+        , 
+        handleReply)
+    }
+
     return(
         <div style = {{with:'200vw', textAlign:'left'}}>
             <div className='columns is-centered' >
@@ -224,20 +234,17 @@ const FestivalChangeRegistration =  () => {
                 :null}
             </div>
 
-         
+        
 
             {registration?
                 <>
                     {renderOutput()}
 
-                    {toggleMore===true?renderMoreOutput():null}
-
-                    <IconButton onClick={handleUpdate}>
-                        <SaveIcon style = {{color:statusColor?statusColor:undefined}} />
-                    </IconButton>    
                     <IconButton onClick={()=>setToggleMore(toggleMore?false:true)}>
                         {toggleMore?<UnfoldLessIcon />:<UnfoldMoreIcon />}
                     </IconButton>    
+
+                    {toggleMore===true?renderMoreOutput():null}
                 </>
             :null}    
 

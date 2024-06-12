@@ -49,13 +49,16 @@ export const GroupByFlat = props => {
         const groupBy = groupByItem.groupBy
         const groups = Object.groupBy(list, it=>it[groupBy])
         const className = groupByItem.className
+        const classNameItem = groupByItem.classNameItem
         return(
-            Object.keys(groups).map(key=>
-                <div className={className}>
+            <div className={className}>
+            {Object.keys(groups).map(key=>
+                <div className={classNameItem}>
                     {RenderView?<RenderView key={key} depth={depth} groupByArr={groupByArr} list={groups[key]} language={language} />:null}    
                     <GroupByFlat depth={depth+1} groupByArr={groupByArr} list={groups[key]} language={language} />
                 </div>
-            )
+            )}
+            </div>
         )
     }
 }    

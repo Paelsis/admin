@@ -11,6 +11,10 @@ import Select from './Select'
 import {isEmail} from '../services/functions'
 import { toBeDisabled } from '@testing-library/jest-dom/matchers';
 
+const styles={
+    th:{color:'whitesmoke'}
+}
+
 
 const LabelWithSup = ({col}) => {
     const supStyle = {color:'red', fontWeight:700}
@@ -274,7 +278,7 @@ const _EditTable = ({columns, list, setList, noAddButton, verticalEdit, handleUp
                         <tr>
                             {columns.map(col=>
                                 <Tooltip title={col.tooltip}>
-                                    <th>
+                                    <th style={styles.th}>
                                         <LabelWithSup col={col} />
                                     </th>
                                 </Tooltip>    

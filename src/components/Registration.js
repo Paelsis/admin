@@ -1,12 +1,14 @@
 import {useState} from 'react'
 import {useSharedState} from '../store'
 import { useLocation } from "react-router-dom";
+import Button from '@mui/material/Button';
 import ViewObject from "./ViewObject"
 import FormTemplate from './FormTemplate'
 import {serverPost} from '../services/serverPost'
 const styles = {
     container:{width:'100vw'},
-    object:{margin:'auto', width:'90vw', textAlign:'left'}
+    object:{margin:'auto', width:'90vw', textAlign:'left'},
+    button:{color:'grey', borderColor:'grey'}
 }
 
 const dayName = [
@@ -306,7 +308,8 @@ const defaultValue = {
     lastName:'Eskilson',
     email:'paelsis@hotmail.com',
     address:'Skomakaregatan 10A, Malmö',
-    haveDancePartner:true,
+    havePartner:true,
+    payForPartner:true,
     phone:'0733-780749',
     firstNamePartner:'Greta',
     lastNamePartner:'Thunberg',
@@ -319,11 +322,14 @@ export default () => {
     const [value, setValue] = useState(defaultValue)
     const [reply, setReply] = useState({})
     const [sharedState, ] = useSharedState()
+    const [view, setView] =  useState({})
     const language = sharedState.language
+    const extraValues = {id:undefined, avaStatusText:undefined, leader:convertRoleToLeader(value.role), language}
+
     const reg = state?
-        {...state, ...value, avaStatusText:undefined, leader:convertRoleToLeader(value.role), language}
+        {...state, ...value, ...extraValues}
     :
-        {...value, avaStatusText:undefined, leader:convertRoleToLeader(value.role), language}
+        {...value, ...extraValues}
 
 
     const handleTestResult = reply => {
@@ -342,15 +348,18 @@ export default () => {
             if (process.env.NODE_ENV === 'development') {
                 // In developkment environment we cannot send mail
                 setReply(reply)
+            } else {
+                setReply(reply)
             }
         } else {
             const message = reply.message
             if (process.env.NODE_ENV === 'development') {
                 // In developkment environment we cannot send mail
                 setReply(reply)
+                alert(message)
             } else {
-                alert('ERROR: Failed to send mail. Message:' + message)
-                setReply({})
+                setReply({reply})
+                alert('ERROR: Failed to send mail to registrant. Message:' + message)
             }
         }
     }
@@ -361,12 +370,13 @@ export default () => {
     const handleRegistrationReply = reply => {
         const data = reply.data?reply.data:reply
         if (data.status === 'OK') {
-            serverPost('/sendMailReg', reg, handleSendMailReply)
+            const orderId = data.orderId?data.orderId:-9999999
+            const regWithOrderId = {...reg, orderId}
+            serverPost('/sendMailReg', regWithOrderId, handleSendMailReply)
         } else {
-            alert('ERROR:failed to register, message:' + JSON.stringify(data.message))
+            alert('ERROR:failed to perform registration, message:' + JSON.stringify(data.message))
         }
     }
-
 
     const buttons=[
         {
@@ -377,7 +387,6 @@ export default () => {
             validate:true,
             handleClick:e=>{
                 e.preventDefault()
-                alert(JSON.stringify(reg))
                 serverPost('/courseRegistration', reg, handleRegistrationReply)
             }    
         },
@@ -423,7 +432,6 @@ export default () => {
                                 value={value} 
                                 setValue={setValue}
                     />
-                    <h3>Left to do: Send register data to databaseCreate a form and add course+form data to tbl_register</h3>
                     <div style={styles.object}>
                         <div className="title is-4">Mail subject course leader</div>
                         <div dangerouslySetInnerHTML={{__html: JSON.stringify(mailSubjectToCourseLeader)}} />
@@ -434,10 +442,17 @@ export default () => {
                         <div className="title is-5">Mail body to customer</div>
                         <div dangerouslySetInnerHTML={{__html: JSON.stringify(mailBodyToCustomer)}} />
 
-                        <h4>Input Data</h4>
-                        <div style={{width:'100vw', margin:'auto'}}>
-                        <ViewObject state={state} />       
-                        </div>
+                        <Button variant='outlined' style={styles.button} onClick={()=>setView(view.showInput?{showInput:undefined}:{showInput:true})}>
+                            {view.showInput?'Hide Input':'Show input'}
+                        </Button>
+                        {view.showInput?
+                            <>
+                                <h4>Input Data</h4>
+                                <div style={{width:'100vw', margin:'auto', fontSize:12}}>
+                                <ViewObject state={state} />       
+                                </div>
+                            </>
+                        :null}    
                     </div>
                 </div>
             </div>

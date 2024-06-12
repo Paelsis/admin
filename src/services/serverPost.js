@@ -14,13 +14,19 @@ const serverPostApi = (apiBaseUrl, irl,  record, handleReply) => {
         const data = reply.data?reply.data:reply
         if (data) {
             if (data.status ==='OK') {
+                // Controlled OK reply
                 const message = '[serverPost] status:OK data:' + JSON.stringify(data)
                 console.log(message)
+            } else if (data.status ==='ERROR'){
+                // Controlled ERROR reply
+                const message = '[serverPost] status:' + data.message?data.message:'No message ???'
+                console.log(message)
             } else {
-                const message = '[serverPost] status:' + data.status + ' record:' + JSON.stringify(record) + ' data:' + JSON.stringify(data) 
+                // Uncontrolled ERROR reply
+                const message = '[serverPost] Uncontrolled error with no status. data:' + JSON.stringify(data) 
                 console.log(message)
                 alert(message)
-            }    
+            }   
             handleReply(data);
         } else {
             const message = '[serverPost] ERROR: No data in reply from axios.post'
@@ -68,7 +74,7 @@ export const deleteRowApi = (apiBaseUrl, tableName, id, handleReply) =>
     serverPost(url, value, handleReply)
 }
 
-const apiBaseUrl = process.env.REACT_APP_API_BASE_URL_SLIM4
+const apiBaseUrl = process.env.REACT_APP_API_BASE_URL
 
 export const serverPost = (irl,  record, handleReply) => serverPostApi(apiBaseUrl, irl, record, handleReply)
 export const replaceRow = (tableName, record, handleReply) => replaceRowApi(apiBaseUrl, tableName, record, handleReply)

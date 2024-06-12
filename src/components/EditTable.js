@@ -7,6 +7,7 @@ import EmailIcon from '@mui/icons-material/Email'
 import SearchIcon from '@mui/icons-material/Search'
 import SaveIcon from '@mui/icons-material/Save'
 import CancelIcon from '@mui/icons-material/Cancel'
+import CameraIcon from '@mui/icons-material/Camera'
 import { Tooltip, IconButton, Button} from '@mui/material';
 import { cyan, red } from '@mui/material/colors';
 import { STATUS_STYLE } from '../services/constant';

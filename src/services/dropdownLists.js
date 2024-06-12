@@ -1,10 +1,6 @@
+const apiBaseUrl = process.env.REACT_APP_API_BASE_URL
+
 export const dropdownListCourse = [
-    {
-        label:'Create/Release template',
-        link:'/courseTemplate',
-        hasDivider:true,
-        title:'Create course template and release it to production'
-    },
     {
         label:'Course Type',
         link:'/table/tbl_course_type',
@@ -17,18 +13,26 @@ export const dropdownListCourse = [
         title:'Definition of your courses'
     },
     {
-        label:'Create a registration',
-        link:'/courseCreateRegistration',
-        title:'Create a registration (same as used by users)'
+        label:'Create template',
+        link:'/courseTemplate',
+        hasDivider:true,
+        title:'Create course template and release it to production',
+        hasDivider:true
+
     },
     {
-        label:'Course schema',
+        label:'Course Schema',
         link:'/courseSchema',
-        title:'Show the course schema'
+        title:'Course schema with registration buttons to the different courses'
     },
 ]
 
 export const dropdownListFestival = [
+    {
+        label:'Product Type',
+        link:'/table/tbl_product_type_festival',
+        title:'Different product types on festival (Used for summation of prices for packages)'
+    },
     {
         label:'Create/Release template',
         link:'/festivalTemplate',
@@ -37,7 +41,8 @@ export const dropdownListFestival = [
     {
         label:'Modify a registration',
         link:'/festivalChangeRegistration',
-        title:'Modify the choice of packages and workshops for a particular registration'
+        title:'Change a registration',
+        hasDivider:true
     },
     {
         label:'Create a registration',
@@ -61,13 +66,13 @@ export const dropdownListFestival = [
 export const dropdownListOther = [
     {
         label:'Text',
-        link:'/table/tbl_text',
+        link:'/text',
         title:'Edit all the texts on the web-pages'  
     },
     {
-        label:'Form field',
-        link:'/table/tbl_form_field',
-        title:'Edit the table for form fields'  
+        label:'Image',
+        link:'/image',
+        title:'Add images to dir' + apiBaseUrl + '/public/images/'  
     },
 ]
 

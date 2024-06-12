@@ -7,9 +7,14 @@ import {GroupByFlat, GroupByRecursive} from "../components/GroupByRecursive"
 import CirkularProgress from '../components/CirkularProgress'
 import { IconButton, Button, Tooltip} from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
+import {styled, Drawer as MuiDrawer} from '@mui/material'
+import Drawer from '@mui/material/Drawer';
+import Box from '@mui/material/Box';
 import { blue } from '@mui/material/colors'
-
+import {DrawerList} from '../components/DrawerList'
+import {Info} from '../components/Info'
 const TEXT = {
+
     headerFields:{
         SV:['Veckodag','Tid','Plats','Lärare','Start','Anmälan'],
         EN:['Day', 'Time', 'Location', 'Teachers', 'Starts', 'Registration']
@@ -44,58 +49,70 @@ const defaultStyle = {
     backgroundColor:'black' 
 }
 
-const ViewBar = props => {
-    const {depth, groupByArr, list} = props
-    const groupByItem = groupByArr[depth]
-    const style = groupByItem.style?groupByItem.style:defaultStyle
-    const columns = groupByItem.columns
-    const viewClassName=groupByItem.viewClassName
+const styles = {
+    button:{color:'blue', 
+        borderColor:'blue', 
+        padding:2,
+        fontSize:12
+    },
+    icon:{
+        padding:0, 
+        background:'transparent', 
+        color:'blue', 
+        borderColor:'blue'
+    }
+}
+
+const ViewCities = props => {
+    const {list} = props
+    const style = {width:'100%', textAlign:'center', fontSize:32, }
     return(
-        <div className={viewClassName}>
-            {columns.map(col=>
-                    <span style={{...style}}>
-                        {list[0][col]}
-                    </span>
-            )}
+            <div style={style}>
+                {list[0].city}
+            </div>
+   )
+}
+
+
+const ViewCourseTypes = props => {
+    const {list} = props
+    const style = {padding:10, fontSize:24}
+    return(
+        <div style={style}>
+            {list[0].courseTypeName}
         </div>
     )
 }
 
 const ViewCourses = props => {
     const navigate = useNavigate()
-    const {depth, groupByArr, list, language} = props
-    const groupByItem = groupByArr[depth]
+    const {list, language} = props
     const headerFields = TEXT.headerFields[language]
     const columns = ['dayname', 'startDate', 'city', 'teachersShort', 'startDate']
-    const style  = {fontSize:14, height:30, margin:'auto', backgroundColor:'whiteSmoke', margin:20, borderRadius:8}
-    const dayName = language => [
-        {},
-        {SV:'Måndag', EN: 'Monday'},
-        {SV:'Tisdag', EN: 'Tuesday'},
-        {SV:'Onsdag', EN: 'Wednesday'},
-        {SV:'Torsdag', EN: 'Thursday'},
-        {SV:'Fredag', EN: 'Friday'},
-        {SV:'Lördag', EN: 'Saturday'},
-    ]
+    const style  = {padding:10, fontSize:14, margin:'auto', backgroundColor:'whiteSmoke'}
+    const [info, setInfo] = useState()
+
     const buttons = [
         {
             // icon:<HowToRegIcon />,
             label:TEXT.register[language],
-            onClick:course=>navigate('/registration', {state:course}),
+            handleClick:course=>navigate('/registration', {state:course}),
+            style:styles.icon,
             title:TEXT.titleButton[language]
         },
     ]
     const infoButton = {
         icon:<InfoIcon />,
-        onClick:courseId=>alert(JSON.stringify(courseId)),
+        style:styles.button,
+        handleClick:courseId=>{setInfo(info?undefined:courseId)}, 
         title:TEXT.titleInfo[language],
     }
     const anchorField = {
-        city:'address',
+        city:li=>li.siteName + ' ' + li.siteAddress + ' ' + li.city
     }
 
     const hoverField = {
-        teachersShort:'teachers',
+        teachersShort:li=>li.teachers,
     }
 
 
@@ -115,14 +132,19 @@ const ViewCourses = props => {
     const colSpan = columns.length + buttons.length - 1    
     const handleClickCity = url => alert(url)
     return(
-        <table style={style}>
+        <div style={style}>
+        <Drawer open={info?true:false}  onClose={()=>setInfo(undefined)}>
+           <Info groupId={'Course'} textId={info} onClose={()=>setInfo(undefined)} />
+        </Drawer>
+
+        <table style={{borderRadius:8}}>
             <thead style={{textAlign:'center'}}>
                 <tr>
-                    <th colSpan={colSpan}>{list[0].nameEN}</th>
+                    <th colSpan={colSpan} style={{color:'whitesmoke', fontSize:16}}>{list[0].nameEN}</th>
                     {infoButton?
-                            <th>
+                            <th style={{color:'whitesmoke'}}>
                                 <Tooltip title={infoButton.title}>
-                                    <IconButton style={{padding:0, background:'transparent', color:'blue'}} onClick={()=>infoButton.onClick(list[0].courseId)}>
+                                    <IconButton style={{padding:0, background:'transparent', color:'blue'}} onClick={()=>infoButton.handleClick(list[0].courseId)}>
                                         {infoButton.icon}
                                     </IconButton>   
                                 </Tooltip> 
@@ -132,7 +154,7 @@ const ViewCourses = props => {
                 {headerFields?
                     <tr>
                         {headerFields.map(col=>
-                            <th>{col}</th>
+                            <th style={{color:'whitesmoke', fontSize:10}}>{col}</th>
                         )}
                     </tr>    
                 :null}           
@@ -142,12 +164,12 @@ const ViewCourses = props => {
                     <tr>
                         {columns.map(col=>
                             anchorField[col]?
-                                <Tooltip title={li[anchorField[col]]}>
+                                <Tooltip title={anchorField[col](li)}>
                                 <td style={{padding:2}}><a onClick={e=>{e.preventDefault(); window.open(li.urlLocation, '_blank')}}>{li[col]}</a></td>
                                 </Tooltip>
                             :hoverField[col]?
-                                <Tooltip title={li[hoverField[col]]}>
-                                <td style={{padding:2}}><a onClick={e=>{e.preventDefault(); alert(hoverField[col])}}>{li[col]}</a></td>
+                                <Tooltip title={hoverField[col](li)}>
+                                <td style={{padding:2}}><a onClick={e=>{e.preventDefault(); alert(hoverField[col](li))}}>{li[col]}</a></td>
                                 </Tooltip>
 
                             :
@@ -156,14 +178,14 @@ const ViewCourses = props => {
                         {buttons?buttons.map(but=>
                             <td style={{margin:2, padding:2}}>
                             {but.icon?
-                                <IconButton style={{padding:0, background:'transparent', color:'blue', borderColor:'blue'}} onClick={()=>but.onClick(li)}>
                                 <Tooltip title={but.title}>
-                                    {but.icon}
-                                    </Tooltip>
-                                </IconButton>    
+                                   <IconButton size='small' style={but.style} onClick={()=>but.handleClick(li)}>
+                                        {but.icon}
+                                    </IconButton>    
+                                </Tooltip>
                             :
                                 <Tooltip title={but.title}>
-                                    <Button size='small' variant='outlined' style={{color:'blue', borderColor:'blue'}} onClick={()=>but.onClick(li)}>
+                                    <Button size='small' variant='outlined' style={but.style} onClick={()=>but.handleClick(li)}>
                                         {but.label?but.label:'No label'}
                                     </Button>                            
                                 </Tooltip>
@@ -174,6 +196,11 @@ const ViewCourses = props => {
                 )}
             </tbody>      
         </table>
+
+
+ 
+        </div>
+
     )
 }
 
@@ -181,20 +208,13 @@ const ViewCourses = props => {
 const groupByArr = [
     {
         groupBy:'city',
-        columns:['city'],
-        style:{color:'grey', textAlign:'center', backgroundColor:'transparent', fontSize:30, fontStyle:'oblique'},
-        className:'columns is-centered',
-        viewClassName:'column p-8 is-1',
-        fontSize:24,
-        RenderView:ViewBar
+        RenderView:ViewCities
     }, 
     {
         groupBy:'courseType',
-        columns:['courseTypeName'],
-        style:{height:30, marginTop:0, textAlign:'center', margin:'auto', color:'grey', backgroundColor:'transparent'}, 
-        fontSize:20,
-        className:'column is-3',
-        RenderView:ViewBar
+        className:'columns is-centered is-multiline',
+        classNameItem:'column is-4 m-8',
+        RenderView:ViewCourseTypes
     },
     {
         groupBy:'courseId',
@@ -220,12 +240,12 @@ export default  () => {
     },[language])
 
     return(
-        <div>
+        <>
             {list?
                 <GroupByFlat depth={0} groupByArr={groupByArr} list={list} language={language} />
             :
                 <CirkularProgress color={'whiteSmoke'} style={{margin:'auto', width:'100vw'}} />
             }
-        </div>
+        </>
     )
 }

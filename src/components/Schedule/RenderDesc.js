@@ -46,20 +46,20 @@ const styles = {
 // RenderText
 export default ({textId, language, setTextId}) => {
         return (
-                <div className='column is-full columns is-narrow is-centered'>
-                        <div className='column is-2'>
-                            <Button variant="outlined" onClick={()=>setTextId(undefined)}>
-                                    {language===LANGUAGE_SV?'Gå tillbaka'
-                                    :language===LANGUAGE_ES?'Para volver, haga clic.'
-                                    :'Go back'}
-                            </Button>    
-                        </div>
-                        <div className='column is-6'>
-                            <TextShow url={'/getTexts'} style={styles.text} groupId={'Course'} textId={textId} language={language}>
-                            <h4>Enter text for groupId={'Course'} and textId={textId} ...</h4>
-                            </TextShow>
-                        </div>
+            <div className='column is-full columns is-narrow is-centered'>
+                <div className='column is-2'>
+                    <Button variant="outlined" onClick={()=>setTextId(undefined)}>
+                            {language===LANGUAGE_SV?'Gå tillbaka'
+                            :language===LANGUAGE_ES?'Para volver, haga clic.'
+                            :'Go back'}
+                    </Button>    
                 </div>
+                <div className='column is-6'>
+                    <TextShow url={'/getTexts'} style={styles.text} groupId={'Course'} textId={textId} language={language}>
+                    <h4>Enter text for groupId={'Course'} and textId={textId} ...</h4>
+                    </TextShow>
+                </div>
+            </div>
         ) 
 }
     

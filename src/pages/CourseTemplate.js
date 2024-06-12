@@ -17,7 +17,6 @@ import StatusMessage from '../components/StatusMessage';
 import {STATUS_STYLE} from '../services/constant'
 
 
-
 const COLUMNS_COURSE = [
     {
         type:'select', 

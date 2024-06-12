@@ -8,6 +8,12 @@ const styles = {
         marginRight:'auto',
         */
     },
+    th:{
+        padding:4,
+    },
+    td:{
+        padding:4
+    }
 }
 
 
@@ -20,10 +26,10 @@ export default ({cols, list, buttons}) => {
             <thead>
                 <tr>
                     {colons.map(col=>
-                        <th>{col}</th>
+                        <th style={styles.th}>{col}</th>
                     )}
                     {buttons?buttons.map(button =>
-                        <th>
+                        <th style={styles.th}>
                             {button.label?button.label:'Button'}
                         </th>
                     ):null}
@@ -33,10 +39,10 @@ export default ({cols, list, buttons}) => {
                 {list.map(li=>
                     <tr>
                         {colons.map(col=>
-                            <td>{(typeof li[col] == "boolean")?(li[col]?'true':'false'):li[col]}</td>
+                            <td style={styles.td}>{(typeof li[col] == "boolean")?(li[col]?'true':'false'):li[col]}</td>
                         )}    
                         {buttons?buttons.map(button =>
-                            <td>
+                            <td style={styles.td}>
                                 <button onClick={()=>button.onClick(li)}>{button.label?button.label:'Button'}</button>
                             </td>
                         ):null}

@@ -1,5 +1,8 @@
 import { generateEditorStateFromValue, emptyEditorState } from '../components/DraftEditor'
 
+
+    
+
 export const labelSwedish = name => {
     switch (name.toLowerCase()) {
         case 'goteborg':return 'Göteborg'
@@ -8,6 +11,17 @@ export const labelSwedish = name => {
         default: return name.toLowerCase()
     }
 }
+
+export const dayName = [
+    {SV:'Söndag', EN: 'Sunday'},
+    {SV:'Måndag', EN: 'Monday'},
+    {SV:'Tisdag', EN: 'Tuesday'},
+    {SV:'Onsdag', EN: 'Wednesday'},
+    {SV:'Torsdag', EN: 'Thursday'},
+    {SV:'Fredag', EN: 'Friday'},
+    {SV:'Lördag', EN: 'Saturday'},
+]
+
 
 export const replaceSwedishChars = value => {
     return value
