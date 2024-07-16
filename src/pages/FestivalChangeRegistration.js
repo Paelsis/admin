@@ -42,7 +42,7 @@ const FestivalChangeRegistration =  () => {
     const [email, setEmail] = useState()
     const [role, setRole] = useState()
 
-    const handleReplyFetchRegistrations = reply => {
+    const handleReplyFetchPicklist = reply => {
         const data = reply.data?reply.data:reply
         if (data.status === 'OK') {
             setRegistrations(data.result.map(it=>({...it, label:it.firstName + ' ' + it.lastName + ' ' + it.email})))
@@ -52,7 +52,7 @@ const FestivalChangeRegistration =  () => {
     }
 
     useEffect(()=>{
-        serverFetchData('/fetchRows?tableName=tbl_registration_festival&UPPER=3000', handleReplyFetchRegistrations) 
+        serverFetchData('/fetchFestivalRegistrationPicklist', handleReplyFetchPicklist) 
     }, [])
 
     const groups = registrations?Object.groupBy(registrations, it=>it.eventType + ' ' + it.year):undefined
@@ -79,28 +79,34 @@ const FestivalChangeRegistration =  () => {
         }
     
         const handleUpdate = () => {
-            const eventType = schedules?schedules[0]?schedules[0].eventType:undefined:undefined
-            const dateRange = schedules?schedules[0]?schedules[0].dateRange:undefined:undefined 
-            const year = schedules?schedules[0]?schedules[0].year:undefined:undefined
-    
-            const data = {
-                id:registration.id, 
-                registration:{...registration, id:undefined, eventType, dateRange, year}, 
-                workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))},
-                packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))}
-            } 
-            serverPost('/updateFestivalRegistration', data, handleReplyUpdate)
+            if (registration.eventType && registration.dateRange && registration.year) {
+                const data = {
+                    id:registration.id, 
+                    registration:{...registration, id:undefined, templateName}, 
+                    workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))},
+                    packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))}
+                }
+                serverPost('/updateFestivalRegistration', data, handleReplyUpdate)
+            } else {
+                let missingData = {
+                    registration,
+                    schedules,
+                    workshops, 
+                    packages, 
+                }
+                alert('WARNING:Missing eventType/dateRange/year for /updateFestivalRegistration ' + JSON.stringify(missingData))
+            }    
         }
 
         const buttons= [
             {
+                type:'submit',
                 variant:status==='OK'?'contained':'outlined',
                 style:status==='OK'?styles.buttonOK:status==='ERROR'?styles.buttonERROR:styles.button,
                 label:TEXT.save.label[language],
                 tooltip:TEXT.save.tooltip[language],
                 title:TEXT.save.tooltip[language],
                 validate:true,
-                handleClick:handleUpdate
             },
             {
                 variant:'outlined',
@@ -117,7 +123,11 @@ const FestivalChangeRegistration =  () => {
                     {schedules?
                         <>
                             <h1 className="title is-3">{registration?(registration.eventType + ' ' + registration.year):"No title"}</h1>
-                            <FormTemplate fields = {registrationFields(language)} value={registration?registration:{}} setValue={setRegistration} buttons={buttons}>
+                            <FormTemplate 
+                                fields = {registrationFields(language)} value={registration?registration:{}} 
+                                setValue={setRegistration} buttons={buttons}
+                                handleSubmit={e=>{e.preventDefault(); handleUpdate()}}
+                            >
                                 {packages?
                                     <>
                                         <h5 className='title is-5'>Packages</h5>
@@ -180,9 +190,11 @@ const FestivalChangeRegistration =  () => {
         }
     }
 
-    const handleReply = reply => {
+    const handleReplyClick = reply => {
+
         const data = reply.data?reply.data:reply
         if (data.status === 'OK') {
+            setRegistration(data.registrations[0])
             setSchedules(data.schedules?data.schedules:undefined)
             setPackages(data.packages?data.packages:undefined)
             setWorkshops(data.workshops?data.workshops:undefined)
@@ -210,7 +222,7 @@ const FestivalChangeRegistration =  () => {
         serverFetchData('/fetchFestivalRegistration?templateName=' + reg.templateName + '&eventType=' + reg.eventType + '&year=' + reg.year 
         + '&email=' + reg.email + '&role=' + reg.role  
         , 
-        handleReply)
+        handleReplyClick)
     }
 
     return(

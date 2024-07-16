@@ -2,7 +2,7 @@ import {useEffect} from 'react'
 import {useSharedState} from '../store'
 import { getAuth, onAuthStateChanged, signOut} from 'firebase/auth';
 import { Outlet, Link } from "react-router-dom";
-import { dropdownListCourse, dropdownListFestival, dropdownListOther} from "../services/dropdownLists";
+import { dropdownListCourse, dropdownListFestival, dropdownListOther, dropdownListPhoto} from "../services/dropdownLists";
 import {useState} from "react"
 import EditIcon from '@mui/icons-material/AppRegistration'
 import {IconButton} from '@mui/material';
@@ -114,6 +114,18 @@ export default () => {
               </div>
             </div>
 
+            <div className="navbar-item has-dropdown is-hoverable">
+              <a className="navbar-link">
+                Images
+              </a>
+
+              <div className="navbar-dropdown">
+                {dropdownListPhoto.map(it=>
+                <Link to={it.link?it.link:'/'} state={{subdir:it.subdir}} className="navbar-item">
+                  {it.label}
+                </Link>)}
+              </div>
+            </div>
 
             <div className="navbar-item has-dropdown is-hoverable">
               <a className="navbar-link">
@@ -128,7 +140,7 @@ export default () => {
               </div>
             </div>
 
-          </div>
+        </div>
           :null}
 
           <div className="navbar-end">
@@ -152,3 +164,4 @@ export default () => {
     </>
   )
 };
+

@@ -3,7 +3,7 @@ import {useSharedState} from '../store'
 import { useNavigate }  from 'react-router-dom';
 import {isNormalVariable} from '../services/functions'
 import {serverFetchData} from "../services/serverFetch"
-import {GroupByFlat, GroupByRecursive} from "../components/GroupByRecursive"
+import {GroupByFlat} from "../components/GroupByRecursive"
 import CirkularProgress from '../components/CirkularProgress'
 import { IconButton, Button, Tooltip} from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
@@ -34,6 +34,11 @@ const TEXT = {
     titleInfo:{
         SV:'Information om kursen',
         EN:'Information about the course',
+    },
+    infoIcon:{
+        padding:0, 
+        background:'transparent', 
+        color:'blue'
     }
 
 }
@@ -60,6 +65,20 @@ const styles = {
         background:'transparent', 
         color:'blue', 
         borderColor:'blue'
+    },
+    table:{
+        borderCollapse:'collapse',
+        //border:'1px solid red',
+    },
+    tr:{
+        background:'whiteSmoke'
+    },
+    course:{
+        padding:10, 
+        fontSize:14, 
+        margin:'auto', 
+        backgroundColor:'transparent',
+        borderRadious:8,
     }
 }
 
@@ -89,7 +108,6 @@ const ViewCourses = props => {
     const {list, language} = props
     const headerFields = TEXT.headerFields[language]
     const columns = ['dayname', 'startDate', 'city', 'teachersShort', 'startDate']
-    const style  = {padding:10, fontSize:14, margin:'auto', backgroundColor:'whiteSmoke'}
     const [info, setInfo] = useState()
 
     const buttons = [
@@ -130,21 +148,21 @@ const ViewCourses = props => {
     }    
     const sortedList = list.sort(sortFunc)
     const colSpan = columns.length + buttons.length - 1    
-    const handleClickCity = url => alert(url)
+    //const handleClickCity = url => alert(url)
     return(
-        <div style={style}>
+        <div style={styles.course}>
         <Drawer open={info?true:false}  onClose={()=>setInfo(undefined)}>
            <Info groupId={'Course'} textId={info} onClose={()=>setInfo(undefined)} />
         </Drawer>
 
-        <table style={{borderRadius:8}}>
+        <table style={styles.table}>
             <thead style={{textAlign:'center'}}>
                 <tr>
                     <th colSpan={colSpan} style={{color:'whitesmoke', fontSize:16}}>{list[0].nameEN}</th>
                     {infoButton?
                             <th style={{color:'whitesmoke'}}>
                                 <Tooltip title={infoButton.title}>
-                                    <IconButton style={{padding:0, background:'transparent', color:'blue'}} onClick={()=>infoButton.handleClick(list[0].courseId)}>
+                                    <IconButton style={styles.infoIcon} onClick={()=>infoButton.handleClick(list[0].courseId)}>
                                         {infoButton.icon}
                                     </IconButton>   
                                 </Tooltip> 
@@ -161,7 +179,7 @@ const ViewCourses = props => {
             </thead>
             <tbody>
                 {sortedList.map(li=>
-                    <tr>
+                    <tr style={styles.tr}>
                         {columns.map(col=>
                             anchorField[col]?
                                 <Tooltip title={anchorField[col](li)}>
@@ -207,17 +225,17 @@ const ViewCourses = props => {
 // Each row is one level of the recursive groupBy process, first row is group by city, next row is group by courseType, and finally group by courseId
 const groupByArr = [
     {
-        groupBy:'city',
+        groupByFunc:it=>it.city,
         RenderView:ViewCities
     }, 
     {
-        groupBy:'courseType',
+        groupByFunc:it=>it.courseType,
         className:'columns is-centered is-multiline',
         classNameItem:'column is-4 m-8',
         RenderView:ViewCourseTypes
     },
     {
-        groupBy:'courseId',
+        groupByFunc:it=>it.courseId,
         RenderView:ViewCourses, 
     }
 ]

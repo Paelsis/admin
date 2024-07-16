@@ -10,7 +10,7 @@ const apiBaseUrl = process.env.REACT_APP_API_BASE_URL
 
 // PhotoList
 const Func = props => {
-        const {subdir, list, setList, matching, setStatusLine} = props; // If matching is among calling parameters, then only files matching this string is is shown
+        const {subdir, list, setList, matching} = props; // If matching is among calling parameters, then only files matching this string is is shown
 
         const handleReplyFetchData = reply => {
                 const data = reply.data?reply.data:reply
@@ -31,7 +31,7 @@ const Func = props => {
 
         useEffect(()=>{
                 // Fetch the list of images from subdir in sorted order with latest mdate put first
-                const irl='/listData?subdir=' + (subdir?subdir:'')
+                const irl='/listData?subdir=' + (subdir?subdir:'/images/other')
                 /* setList([]) */
                 serverFetchData(irl, handleReplyFetchData)
         },[subdir])

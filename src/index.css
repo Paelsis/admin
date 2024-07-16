@@ -1,7 +1,9 @@
 html,
 body {
   margin: 0;
-  background-color:whitesmoke;
+  /*background-color:whitesmoke;*/
+  background:linear-gradient(45deg, rgb(243, 221, 237) 0%, rgb(153, 235, 235) 100%);
+  color:steelblue;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -24,22 +26,16 @@ table {
 	box-shadow: 0 5px 5px rgba(0,0,0,0.3);
 }
 
-thead {
-	color:white;
-}
-
 th {
-	padding: 15px;
-	/* background:lightgrey;*/
-	color:whitesmoke;
+	padding: 2px;
+	color:white;
 	background-color:slategray;
 	word-wrap:break-word;
-	margin:20px;
 }
 
 td {
-	padding: 15px;
-	margin:20px;
+	padding: 4px;
+	margin:4px;
 }
 
 a {

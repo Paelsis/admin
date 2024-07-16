@@ -12,6 +12,7 @@ import ViewTable from '../components/ViewTable'
 import FormTemplate from '../components/FormTemplate'
 import {ChecklistPackage, ChecklistWorkshop} from '../components/Checklist'
 import {TEXT, registrationFields} from '../services/text'
+import {calcAmount} from '../services/functions'
 
 
 const styles = {
@@ -82,15 +83,16 @@ const FestivalRegistration =  () => {
 
         const buttons= [
             {
+                type:'submit',
                 variant:status==="OK"?'contained':'outlined',
                 style:status==='OK'?styles.buttonOK:status==='ERROR'?styles.buttonERROR:styles.button,
                 label:TEXT.registration.label[language],
                 tooltip:TEXT.registration.tooltip[language],
                 title:TEXT.registration.tooltip[language],
                 validate:true,
-                handleClick:handleUpdate
             },
             {
+                type:'button',
                 variant:'outlined',
                 label:TEXT.cancel.label[language],
                 tooltip:TEXT.cancel.tooltip[language],
@@ -100,13 +102,23 @@ const FestivalRegistration =  () => {
         ]
         const eventType = schedules?schedules[0]?schedules[0].eventType?schedules[0].eventType:'No event type 1':'No event type 2':'No eventType 3'
         const year = schedules?schedules[0]?schedules[0].year?schedules[0].year:'No year 1':'No year 2':'year 3'
+        const amount = calcAmount(packages, workshops, 'SEK')
+
         return(
             <div className='columns is-centered'>
                 <div className='column is-4'>
                     {schedules.length >0?
                         <>
                             <h1 className="title is-3">{eventType + ' ' + year}</h1>
-                            <FormTemplate fields = {registrationFields(language)} value={registration?registration:{}} setValue={setRegistration} buttons={buttons}>
+                            <FormTemplate 
+                                fields = {registrationFields(language)} 
+                                value={registration?registration:{}} 
+                                setValue={setRegistration} buttons={buttons}
+                                handleSubmit={e=>{e.preventDefault(); handleUpdate()}}
+                            >
+                                <>
+                                    <h5 className='title is-5'>Price:{amount}</h5>
+                                </>
                                 <>
                                     <h5 className='title is-5'>Packages</h5>
                                     <ChecklistPackage list={packages?packages:[]} setList={setPackages} language={language} />

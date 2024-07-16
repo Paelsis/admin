@@ -134,7 +134,7 @@ export default () =>
             templateName:ans, 
             courses:courses.map(it=>({...it, online:it.online==1?1:0, templateName:ans})),
         }
-        alert(JSON.stringify(courses.map(it=>it.courseId)))
+        // alert(JSON.stringify(courses.map(it=>it.courseId)))
         serverPost('/updateCourseTemplate', data, handleReplyWithoutOKStatus)
     }
 
@@ -271,7 +271,7 @@ export default () =>
     return(
         <div style={{position:'relative'}}>
             <PicklistGroupBy 
-                labelButton='Template' 
+                labelButton='Select Template' 
                 tableName='tbl_course_template' 
                 groupBy={'year'}
                 labelName='templateName' 

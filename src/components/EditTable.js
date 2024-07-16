@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {addRow, replaceRow, deleteRow} from '../services/serverPost'
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import AddIcon from '@mui/icons-material/Add';
 import EmailIcon from '@mui/icons-material/Email'
@@ -77,16 +77,16 @@ const _RenderEdit = ({columns, record, buttons, handleChange}) => {
                 </thead>
 
                 <tbody>
-                    {columnsReduced.map(col=>
+                    {columnsReduced.map((col, index)=>
                         <tr>
                             <th style={styles.th}>
                                 {col.Field}
                             </th>
                             <td>
                                 {TEXTAREA_FIELDS.includes(col.Field)?
-                                    <textarea style={styles.add} rows={3} columns={50} name={col.Field} placeholder={col.Field} value = {record[col.Field]} onChange={handleChange}/>
+                                    <textarea autoFocus={index==0?true:undefined} style={styles.add} rows={3} columns={50} name={col.Field} placeholder={col.Field} value = {record[col.Field]} onChange={handleChange}/>
                                 :
-                                    <input style={styles.add} type={col.type} name={col.Field} placeholder={record[col.Field]} value = {record[col.Field]} onChange={handleChange}/>
+                                    <input autoFocus={index==0?true:undefined} style={styles.add} type={col.type} name={col.Field} placeholder={record[col.Field]} value = {record[col.Field]} onChange={handleChange}/>
                                 }    
                             </td>
                         </tr>
@@ -97,9 +97,11 @@ const _RenderEdit = ({columns, record, buttons, handleChange}) => {
                             <td colSpan={2}>
                                 {buttons.map(button => 
                                     button.icon?
-                                            <IconButton onClick={()=>button.onClick(button, record)}>
-                                                {button.icon}                            
-                                            </IconButton>
+                                            <Tooltip title={<h2>{button.tooltip}</h2>}>
+                                                <IconButton onClick={()=>button.onClick(button, record)}>
+                                                    {button.icon}                            
+                                                </IconButton>
+                                            </Tooltip>
                                     :    
                                             <Button variant={button.variant?button.variant:'outlined'} style={{color:'white'}} onClick={()=>button.onClick(record)}>{button.label?button.label:'No label'}</Button>
                                 )}    
@@ -152,7 +154,7 @@ const SearchValue = ({fld, search, setSearch}) => {
     )    
     }
 
-const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, handleDelete, search, setSearch, handleFilter, handleComment}) => {
+const _RenderView = ({list, columns, buttons, handleAdd, search, setSearch, filterList, setFilterList, handleFilter, handleComment}) => {
     const keys = columns?columns.map(it=>it.Field):Object.keys(list[0])
     const filterFunc = key => key=='id'?false:true 
     
@@ -198,22 +200,21 @@ const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, han
                             <div dangerouslySetInnerHTML={{__html: row[key]}} />
                         </td>
                     )}       
+                    {buttons.map(but=>
                         <td style={styles.td}>
-                            <IconButton onClick={()=>handleEdit(row)}>
-                                    <EditIcon />
-                            </IconButton>
+                            <Tooltip title={<h2>{but.tooltip}</h2>}>
+                                <IconButton onClick={()=>but.onClick(row)}>
+                                        {but.icon}
+                                </IconButton>
+                            </Tooltip>
                         </td>
-                        <td style={styles.td}>
-                            <IconButton  onClick={()=>handleDelete(row.id)} >
-                                <DeleteForeverIcon/>
-                            </IconButton>
-                        </td>
+                    )}    
                 </tr>     
             )}      
                 <tr style={styles.tr(false)}>
                     <td colSpan = {keys.length + 2} style={styles.td} >
                         <IconButton>
-                            <AddIcon onClick={()=>handleEdit({})} />
+                            <AddIcon onClick={()=>handleAdd({})} />
                         </IconButton>
                     </td>                
                 </tr>       
@@ -223,7 +224,8 @@ const _RenderTable = ({list, columns, filterList, setFilterList, handleEdit, han
     )
 }    
 
-const EditTable = ({tableName, columns, list, setList, buttons}) => {
+// EditTable
+export default ({tableName, columns, list, setList}) => {
     const [record, setRecord] = useState()
     const [recordRte, setRecordRte] = useState()
     const [search, setSearch] = useState({})
@@ -333,6 +335,7 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
         replaceRow(tableName, record, handleReplaceReply)
     }
 
+
     const handleChange = e => {
         setRecord({...record, [e.target.name]:e.target.value})
     }
@@ -341,10 +344,9 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
         setRecordRte({...recordRte, [key]:val})
     }
 
-    const handleCancel = e => {
+    const handleCancel = row => {
         setRecord(undefined)
     }
-
 
     const handleFilter = list => {
         let filterList = list
@@ -373,41 +375,61 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
 
 
 
-    const emptyRow = columnsToEmptyObject(columns)
+    //const emptyRow = columnsToEmptyObject(columns)
 
-    buttons = [
+    const buttonsEdit = [
         {
             icon:<SaveIcon />,
+            tooltip:'Save row',
             onClick:handleReplace
         },
         {
             icon:<CancelIcon />,
-            onClick:()=>setRecord()
+            tooltip:'Cancel edit',
+            onClick:row=>handleCancel(row)
+        },
+        {
+            icon:<DeleteIcon />,
+            tooltip:'Delete row',
+            onClick:row=>handleDelete(row.id)
         },
     ]
+
+    const buttonsView = [
+        {
+            icon:<EditIcon />,
+            tooltip:'Edit row',
+            onClick:row=>setRecord(row)
+        },
+        {
+            icon:<DeleteIcon />,
+            tooltip:'Delete row',
+            onClick:row=>handleDelete(row.id)
+        },
+    ]    
   
     return(
         <div style={styles.root}>
             {record?
                 <_RenderEdit 
                     columns={columns} 
-                    buttons={buttons}
+                    buttons={buttonsEdit}
                     record={record} 
                     handleChange={handleChange} 
                     handleChangeRte={handleChangeRte} 
                 />
             :list.length > 0?
                 <>
-                    <_RenderTable 
+                    <_RenderView 
                         list={list}
                         columns={columns}
+                        buttons={buttonsView}
                         search={search}
                         setSearch={setSearch}
+                        handleAdd={setRecord}
                         filterList={filterList?filterList:list} 
                         setFilterList={setFilterList} 
                         handleFilter={()=>handleFilter(list)}
-                        handleEdit={setRecord} 
-                        handleDelete={handleDelete} 
                         handleComment={handleComment} 
                     />
                 </>
@@ -417,5 +439,4 @@ const EditTable = ({tableName, columns, list, setList, buttons}) => {
     )
 }
 
-export default EditTable
 

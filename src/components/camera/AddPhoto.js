@@ -18,6 +18,9 @@ const styles={
     border:2, 
     borderStyle: 'dotted',
     borderColor:'red'
+  },
+  button: {
+    marginTop: '7vh',
   }
 }
 
@@ -131,30 +134,33 @@ class Comp extends Component {
 
     renderForm() {    
       return(
-        <form className='columns is-centered' onSubmit={this.handleSubmit}>
-            <IconButton
-              //className='column is-narrow'
-              type='submit'
-              size="small"
-              edge="start"
-              color="inherit"
-              sx={{ mr: 0 }}
-            >
-            <p/>  
-            <SaveIcon display='none' />
-            </IconButton>
-            <IconButton
-              //className='column is-narrow'
-              type='button'
-              size="small"
-              edge="start"
-              color="inherit"
-              sx={{ mr: 0 }}
-              onClick={()=>this.setState({selectedFiles: [], imagePreviewUrls:[], newFileNames:[]})}
-            >
-              <CancelIcon  />                              
-            </IconButton>
-        </form>
+        <div className='columns is-centered'>
+          <form onSubmit={this.handleSubmit}>
+              <IconButton
+                //className='column is-narrow'
+                type='submit'
+                size="large"
+                color="inherit"
+                tooltip="Save image"
+                sx={{ mr: 0 }}
+              >
+              <p/>  
+              <SaveIcon display='none' />
+              </IconButton>
+              <IconButton
+                //className='column is-narrow'
+                type='button'
+                size="large"
+                color="inherit"
+                tooltip="Cancel operation"
+                sx={{ mr: 0 }}
+                onClick={()=>this.setState({selectedFiles: [], imagePreviewUrls:[], newFileNames:[]})}
+              >
+                <CancelIcon  />                              
+              </IconButton>
+          </form>
+        </div>
+
       )
   }
   render() {
@@ -178,6 +184,7 @@ class Comp extends Component {
                   </div>
                 )} 
               </div>
+              <div style={{height:50}} />
               {this.renderForm()}
             </div>
         :
@@ -191,16 +198,16 @@ class Comp extends Component {
               ref={fileInput => this.fileInput = fileInput} 
               multiple={this.props.multiple?true:false}
             />
+            <p/>
             <IconButton
-              //className='column is-narrow'
               type='button'
-              size="medium"
-              edge="start"
+              style={styles.button}
+              tooltip="Add a photo"
               color="inherit"
-              sx={{ mr: 0 }}
+              sx={{ mr:0 }}
               onClick={()=>this.fileInput.click()}
             >
-              <AddAPhotoIcon fontSize="inherit" />
+              <AddAPhotoIcon size='large' />
             </IconButton>
           </div>
         }
@@ -214,3 +221,5 @@ class Comp extends Component {
 export const AddPhotoSingle = props => <Comp multiple={undefined} {...props}/>
 export const AddPhotoMultiple = props => <Comp multiple={true} {...props} />
   
+
+

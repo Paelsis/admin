@@ -31,7 +31,8 @@ const _Column = ({noLabel, col, value, setValue, style, selectCounter}) => {
         name:col.name,
         placeholder:col.placeholder?col.placecolder:'',
         checked:col.type === 'checkbox'?value?value[col.name]==1?true:false:false:false,
-        maxlength:col.maxlength,
+        maxLength:col.maxLength,
+        maxLength:col.maxLength,
         value:col.type === 'checkbox'?(value[col.name]?1:0):(value?value[col.name]?value[col.name]:'':''),
         required:col.required,
         radioValues:col.type==='radio'?col.radioValues:undefined,
@@ -122,6 +123,10 @@ const _Column = ({noLabel, col, value, setValue, style, selectCounter}) => {
 const _AddRow = ({columns, addRow, noLabel, disabledRow}) => {
     const [value, setValue] = useState({})
     const disabled = disabledRow(value)
+    const handleClick = ()=>{
+        addRow(value)
+        setValue({})
+    }
     return(
         <tr style={{fontSize:12}}>
             {columns.map(col => 
@@ -130,7 +135,7 @@ const _AddRow = ({columns, addRow, noLabel, disabledRow}) => {
                 </td>
             )}    
             <td colSpan={3}>
-            <IconButton onClick={()=>addRow(value)} disabled={disabled}>
+            <IconButton onClick={handleClick} disabled={disabled}>
                 <AddIcon />
             </IconButton>
             </td>
@@ -138,7 +143,7 @@ const _AddRow = ({columns, addRow, noLabel, disabledRow}) => {
     )
  }
 
- const _EditRowHorizontal = ({columns, row, handleRow, toggleEdit, disabledRow}) => {
+ const _EditRowHorizontal = ({columns, buttons, row, handleRow, toggleEdit, disabledRow}) => {
     const disabled = disabledRow(row)
     return(
         <tr>
@@ -156,7 +161,7 @@ const _AddRow = ({columns, addRow, noLabel, disabledRow}) => {
     )    
  }
 
- const _EditRowVertical = ({columns, row, handleRow, toggleEdit, disabledRow}) => {
+ const _EditRowVertical = ({columns, buttons, row, handleRow, toggleEdit, disabledRow}) => {
     const disabled = disabledRow(row)
     return(
         <div class='column is-half'>
@@ -270,7 +275,19 @@ const _EditTable = ({columns, list, setList, noAddButton, verticalEdit, handleUp
         }    
     }
 
+
+
     const disabledRow = row => columns.find(col => !isValidCol(col, row))
+
+    const compareSequenceNumber = (a,b) => {
+        if (a.sequenceNumber && b.sequenceNumber) {
+            return a.sequenceNumber - b.sequenceNumber
+        } else if (a.id && b.id) {
+            return a.id - b.id
+        } else {
+            return 0
+        }
+    }
 
     return(
             <table>
@@ -288,7 +305,7 @@ const _EditTable = ({columns, list, setList, noAddButton, verticalEdit, handleUp
                         </tr>
                 </thead>
                 <tbody>
-                {list.map((row, index)=>
+                {list.sort(compareSequenceNumber).map((row, index)=>
                     edit.includes(index)?
                         <>
                             {verticalEdit?
@@ -324,9 +341,9 @@ const _EditTable = ({columns, list, setList, noAddButton, verticalEdit, handleUp
 }
 
 
+// Note, we cannot use onSubit since form-tag cannot have table items as children
 // EditTableWithSelect 
 export default ({columns, list, setList, noAddButton, verticalEdit, handleUpdate, handleDelete, handleAdd, statusColor}) => {
-
     return(
         <div style={{overflowX:'auto'}}>
             <_EditTable

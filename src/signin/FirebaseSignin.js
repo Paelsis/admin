@@ -86,7 +86,7 @@ const FirebaseSignin = () => {
             <form  onSubmit={handleSignin}>
                  <p/>  
                 <label>
-                Logga in med E-mail och lösenord (enbart för anställda på Vatansever)<p/>
+                Logga in med e-mail och lösenord<p/>
                 </label>
                 <input style={inputStyle} name='email' type='email' placeholder='E-mail' onChange={handleChange} />
                 <p/>

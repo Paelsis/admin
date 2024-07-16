@@ -15,9 +15,8 @@ const getField = column => {
 }    
 
 // FormTemplate.js
-// FormTemplate.js
 export default props => {
-    const {fields, buttons, value, setValue, children} = props
+    const {fields, buttons, value, setValue, handleSubmit, children} = props
     const handleKeyPress = e => {
         if (e.key === 'Enter' && !!props.handlePressEnter) {
             props.handlePressEnter()
@@ -43,7 +42,7 @@ export default props => {
     const isValid = fields.find(fld => !isValidFld(fld))
     return(
         <div>   
-                <form>
+                <form onSubmit={handleSubmit?handleSubmit:undefined}>
                     <div>
                         {fields.filter(fld=>!isHidden(fld)).map((fld, index) => 
                             <Tooltip 
@@ -78,8 +77,7 @@ export default props => {
                                             sx={button.sx}
                                             style={button.style}
                                             color={"inherit"}
-                                            disabled={button.disabled?true:button.validate?isValid:false}
-                                            onClick={button.handleClick}
+                                            onClick={button.handleClick?button.handleClick:undefined}
                                         >
                                             {button.label}
                                         </Button>

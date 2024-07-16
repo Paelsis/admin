@@ -100,14 +100,14 @@ export const ChecklistWorkshop = ({list, setList, language}) => {
     }
     const groups = Object.groupBy(list.sort(sortFunc), it=>it.startDate?it.startDate:true)
     const keys = Object.keys(groups)
-
+    const dayOfWeekFunc = key =>  groups[key]?groups[key][0].dayOfWeek?groups[key][0].dayOfWeek:0:0
     return(
         <table style={styles.table}>
             {keys.map(key=>
                 <>
                 <thead>
                     <tr>
-                        <th colSpan={2} style={{color:'white', padding:2}}>{dayName[groups[key][0].dayOfWeek][language]}</th>
+                        <th colSpan={2} style={{color:'white', padding:2}}>{dayName[dayOfWeekFunc(key)][language]}</th>
                         <th colSpan={1} style={{color:'white', padding:2}}>{key}</th>
                     </tr>
                 </thead>

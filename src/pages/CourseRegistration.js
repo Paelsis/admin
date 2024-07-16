@@ -6,24 +6,24 @@ import { useNavigate }  from 'react-router-dom';
 
 const groupByArr = [
     {
-        groupBy:'year',
+        groupByFunc:it=>it.year,
         style:{width:'70%', height:30, marginTop:10, textAlign:'center', margin:'auto', color:'darkBlue', backgroundColor:'lightBlue'}
     }, 
     {
-        groupBy:'eventType',
+        groupByFunc:it=>it.eventType,
         style:{width:'60%', height:30, marginTop:10, textAlign:'center', margin:'auto', color:'lightBlue', backgroundColor:'blue'}
     }, 
     {
-        groupBy:'courseType',
+        groupByFunc:it=>it.courseType,
         style:{width:'50%', height:30, marginTop:10, textAlign:'center', margin:'auto', color:'lightBlue', backgroundColor:'darkBlue'}
     }, 
     {
-        groupBy:'courseId',
+        groupByFunc:it=>it.courseId,
         labelFields:['nameEN'],
         style:{width:'40%', height:30, marginTop:5, textAlign:'center', margin:'auto', color:'blue', backgroundColor:'lightGreen'}
     },
     {
-        groupBy:'productId',
+        groupByFunc:it=>it.productId,
         labelFields:['city', 'startDate', 'startTime'],
         style:{width:'30%', height:30, marginTop:5, textAlign:'center', margin:'auto', color:'yellow', backgroundColor:'green'}
     }

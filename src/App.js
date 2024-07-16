@@ -17,8 +17,11 @@ import FestivalChangeRegistration from "./pages/FestivalChangeRegistration"
 import Other from "./pages/Other"
 import Table from "./pages/Table"
 import Text from "./pages/Text"
+import Txt from "./pages/Txt"
 import Image from "./pages/Image"
+import Html from "./components/HtmlView"
 import Registration from "./components/Registration"
+import Menu from "./components/Menu"
 import NoPage from "./pages/NoPage"
 import { getAuth, onAuthStateChanged} from 'firebase/auth';
 import 'bulma/css/bulma.min.css';
@@ -50,13 +53,16 @@ function App() {
                 <Route path="festivalTemplate" element={<FestivalTemplate />} />
                 <Route path="festivalCreateRegistration" element={<FestivalRegistration />} />
                 <Route path="festivalChangeRegistration" element={<FestivalChangeRegistration />} />
-                <Route path="other" element={<Other />} />
                 <Route path="table/:tableName" element={<Table />} />
                 <Route path="registration" element={<Registration />} />
                 <Route path="courseSchema" element={<CourseSchema />} />
                 <Route path="courseSchemaMenu" element={<CourseSchemaMenu />} />
                 <Route path="text" element={<Text />} />
+                <Route path="txt" element={<Txt />} />
                 <Route path="image" element={<Image />} />
+                <Route path="html" element={<Html />} />
+                <Route path="menu" element={<Menu />} />
+                <Route path="other" element={<Other />} />
               </>
             :null}
           </Route>
@@ -65,7 +71,6 @@ function App() {
       </BrowserRouter>  
     </div>
   )
-
 }
 
 export default App;

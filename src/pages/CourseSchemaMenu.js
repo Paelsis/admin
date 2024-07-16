@@ -4,37 +4,68 @@ import {serverFetchData} from "../services/serverFetch"
 import {GroupByFlat, GroupByRecursive} from "../components/GroupByRecursive"
 import CirkularProgress from '../components/CirkularProgress'
 import { IconButton, Button, Tooltip} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit'
+import SaveIcon from '@mui/icons-material/Save'
+import CancelIcon from '@mui/icons-material/Cancel'
+
+import ViewTable from '../components/ViewTable'
 import InfoIcon from '@mui/icons-material/Info';
 import { blue, red } from '@mui/material/colors'
 
-const URL = '/scheduleCourse'
+const URL = '/fetchRows?tableName=tbl_course_def'
 
 const defaultStyle = {
     height:30, 
     marginTop:5, 
     textAlign:'center', 
     margin:'auto', 
-    color:'yellow', 
-    backgroundColor:'black' 
+    color:'teal', 
+    backgroundColor:'transparent' 
 }
 
-const ViewBar = props => {
+const _ViewBar = props => {
     const {depth, groupByArr, list} = props
     const groupByItem = groupByArr[depth]
-    const groupBy = groupByItem.groupBy
+    const groupByFunc = groupByItem.groupByFunc
     const buttons = groupByItem.buttons?groupByItem.buttons:[]
     const style = groupByItem.style?groupByItem.style:defaultStyle
     const columns = groupByItem.columns
     const viewClassName=groupByItem.viewClassName
     const handleClick = v=>alert(v)
+    const key = groupByFunc(list[0])
     return(
-        <div className={viewClassName} onClick = {()=>handleClick?handleClick(list[0][groupBy]):null}>
+        <div className={viewClassName} onClick = {()=>handleClick?handleClick(key):null}>
+            {key}
             {columns.map(col=>
                     <span style={{...style}}>
                         {list[0][col]}
                     </span>
             )}
         </div>
+    )
+}
+
+
+
+const _ViewTable = props => {
+    const {depth, groupByArr, list, setList} = props
+    const [edit, setEdit] = useState()
+    const groupByItem = groupByArr[depth]
+    const columns = groupByItem.columns
+
+    const buttons = [
+        {
+            icon: idx => idx===edit?<SaveIcon/>:<EditIcon/>,
+            onClick:index=>setEdit(edit===index?undefined:index)        
+        },    
+        {
+            icon:<CancelIcon />,
+            onClick:index=>setEdit(undefined)        
+        }    
+    ]
+
+    return(
+            <ViewTable tableName={'tbl_course_def'} edit={edit} columns={columns} list={list} setList={setList} buttons={buttons} />
     )
 }
 
@@ -98,11 +129,11 @@ const ViewCourses = props => {
                         {buttons?buttons.map(but=>
                             <td style={{margin:2, padding:2}}>
                             {but.icon?
-                                    <IconButton style={{padding:0, background:'transparent', color:'blue', borderColor:'blue'}} onClick={()=>but.onClick(li.productId)}>
+                                <IconButton style={{padding:0, background:'transparent', color:'blue', borderColor:'blue'}} onClick={()=>but.onClick(li.productId)}>
                                 <Tooltip title={but.title}>
                                         {but.icon}
-                                        </Tooltip>
-                                    </IconButton>    
+                                    </Tooltip>
+                                </IconButton>    
                             :
                                 <Tooltip title={but.title}>
                                     <Button size='small' variant='outlined' style={{color:'blue', borderColor:'blue'}} onClick={()=>but.onClick(li.productId)}>
@@ -119,62 +150,21 @@ const ViewCourses = props => {
     )
 }
 
-
 const groupByArr = [
-    /*
     {
-        groupBy:'city',
-        columns:['city'],
-        style:{color:'grey', textAlign:'center', backgroundColor:red[200], fontSize:30, fontStyle:'oblique'},
-        className:'columns is-centered'
-        viewClassName:'column p-8 is-1',
-        fontSize:24,
-        RenderView:ViewBar
-    }, 
-    */
-    {
-        groupBy:'courseType',
-        columns:['courseTypeName'],
-        style:{fontSize:14, height:30, width:'100vw', textAlign:'center', margin:0, backgroundColor:'green', color:'white', borderRadius:2},
-        fontSize:20,
-        handleClick:arg=>alert(arg),
-        RenderView:ViewBar
-    },
-    {
-        groupBy:'courseId',
+        groupByFunc:it=>it.city,
         columns:['nameSV'],
-        style:{fontSize:14, height:30, width:'100vw', textAlign:'center', margin:0, marginLeft:20,backgroundColor:'lightGrey', borderRadius:2},
-        fontSize:20,
-        handleClick:arg=>alert(arg),
-        RenderView:ViewBar
-    },
-    /*
+        RenderView:_ViewBar
+    }, 
     {
-        groupBy:'courseId',
-        headerFields:['Weekday', 'Time', 'Starts', 'City', 'Teachers', 'Register'],
-        columns:['dayname', 'startTime', 'startDate', 'city', 'teachersShort'],
-        style:{fontSize:14, height:30, width:'80vw', textAlign:'center', margin:'auto', backgroundColor:'lightGrey', borderRadius:8},
-        buttons:[
-            {
-                // icon:<HowToRegIcon />,
-                label:'Register',
-                onClick:productId=>alert(JSON.stringify(productId)),
-                title:'Registration button / Anmälan'
-            },
-        ],
-        infoButton:{
-            icon:<InfoIcon />,
-            onClick:courseId=>alert(JSON.stringify(courseId)),
-            title:'Information about the course / Information om kursen'
-        },
-        anchors:{
-            teachersShort:'teachers',
-            city:'address',
-        },
-        RenderView:ViewBar, 
-    }
-    */
+        groupByFunc:it=>it.courseType,
+        columns:['courseType'],
+        className:'columns is-centered is-multiline',
+        classNameItem:'column is-12',
+        RenderView:_ViewTable
+    },
 ]
+
 
 export default  () => {
     const [list, setList] = useState()
@@ -193,7 +183,7 @@ export default  () => {
     return(
         <div>
             {list?
-                <GroupByFlat depth={0} groupByArr={groupByArr} list={list} />
+                <GroupByFlat depth={0} groupByArr={groupByArr} list={list} setList={setList} />
             :
                 <CirkularProgress color={'lightGrey'} style={{margin:'auto', width:'100vw'}} />
             }

@@ -2,6 +2,8 @@ import {useEffect, useState} from 'react'
 import {serverFetchData} from "../services/serverFetch"
 import {uniqueObjectList} from "../services/functions"
 
+
+// Note that if valueName is set the picklist returns record[valueName], otherwise it returns the record
 export const PicklistGroupBy = ({labelButton, picklist, tableName, groupBy, labelName, valueName, value, handleClick, unique, close, reloadCounter}) => {
     const [list, setList] = useState([])
     const [active, setActive] = useState()
@@ -41,7 +43,13 @@ export const PicklistGroupBy = ({labelButton, picklist, tableName, groupBy, labe
 
         <div className={active?"dropdown is-active":"dropdown"}>
             <div className="dropdown-trigger">
-                <button className="button" aria-haspopup="true" aria-controls="dropdown-menu" onClick={()=>setActive(!active)}>
+                <button 
+                    className="button"     
+                    style={{color:'black', borderColor:'black', background:'transparent'}} 
+                    aria-haspopup="true" 
+                    aria-controls="dropdown-menu" 
+                    onClick={()=>setActive(!active)}
+                >
                     <span>{labelButton?labelButton:'Dropdown'}</span>
                     <span className="icon is-small">
                         <i className="fas fa-angle-down" aria-hidden="true"></i>
@@ -73,7 +81,6 @@ export const PicklistGroupBy = ({labelButton, picklist, tableName, groupBy, labe
     </>
   )
 }
-
 
 export default ({labelButton, picklist, tableName, labelName, valueName, value, handleClick, unique, close, reloadCounter}) => {
     const [list, setList] = useState([])
@@ -110,18 +117,28 @@ export default ({labelButton, picklist, tableName, labelName, valueName, value, 
 
         <div className={active?"dropdown is-active":"dropdown"}>
             <div className="dropdown-trigger">
-                <button className="button" aria-haspopup="true" aria-controls="dropdown-menu" onClick={()=>setActive(!active)}>
+                <button 
+                    className="button" 
+                    style={{color:'black', borderColor:'black', background:'transparent'}} 
+                    aria-haspopup="true" 
+                    aria-controls="dropdown-menu" 
+                    onClick={()=>setActive(!active)}
+                >
                     <span>{labelButton?labelButton:'Dropdown'}</span>
                     <span className="icon is-small">
                         <i className="fas fa-angle-down" aria-hidden="true"></i>
                     </span>
                 </button>
             </div>
-            <div className="dropdown-menu" id="dropdown-menu" role="menu">
-                <div className="dropdown-content">
+            <div className="dropdown-menu" id="dropdown-menu" role="menu" >
+                <div 
+                    className="dropdown-content" 
+                    style={{color:'black', background:'transparent'}} 
+                >
                     {list?
-                        list.map(it =>
-                            <a href="#" 
+                        list.map((it,index) =>
+                            <a href="#"  
+                                style={{color:'black',  backgroundColor:(index%2===0)?'rgba(111, 111, 111, 0.3)':'rgba(111, 111, 111, 0.2)'}}
                                 className={value?value[valueName]===it[valueName]?"dropdown-item is-active":"dropdown-item":"dropdown-item"} 
                                 onClick={e=>onClick(e, (valueName?it[valueName]:it))}
                             >

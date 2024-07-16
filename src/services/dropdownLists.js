@@ -29,9 +29,14 @@ export const dropdownListCourse = [
 
 export const dropdownListFestival = [
     {
-        label:'Product Type',
-        link:'/table/tbl_product_type_festival',
-        title:'Different product types on festival (Used for summation of prices for packages)'
+        label:'Product Type Package',
+        link:'/table/tbl_package_product_type',
+        title:'Different types of packages'
+    },
+    {
+        label:'Product Type Workshops',
+        link:'/table/tbl_workshop_product_type',
+        title:'Different types of workshops (or milonga)'
     },
     {
         label:'Create/Release template',
@@ -63,6 +68,35 @@ export const dropdownListFestival = [
     */
 ]
 
+const publicDir = apiBaseUrl + '/public/images'
+
+export const dropdownListPhoto = [
+    {
+        label:'Teacher',
+        link:'/image',
+        subdir:'/images/teacher',
+        title:'Add teachres to dir' + publicDir + '/images/teacher'  
+    },
+    {
+        label:'Event',
+        link:'/image',
+        subdir:'/images/event',
+        title:'Add images to dir' + publicDir + '/images/event'  
+    },
+    {
+        label:'School',
+        link:'/image',
+        subdir:'/images/school',
+        title:'Add images to dir' + publicDir + '/images/school'  
+    },
+    {
+        label:'Other',
+        link:'/image',
+        subdir:'/images/other',
+        title:'Other images saved in dir ' + publicDir + '/images/other'    
+    },
+]
+
 export const dropdownListOther = [
     {
         label:'Text',
@@ -70,9 +104,9 @@ export const dropdownListOther = [
         title:'Edit all the texts on the web-pages'  
     },
     {
-        label:'Image',
-        link:'/image',
-        title:'Add images to dir' + apiBaseUrl + '/public/images/'  
+        label:'Homepage Menu',
+        link:'/menu',
+        title:'The menu shown on first page'  
     },
 ]
 

@@ -18,10 +18,6 @@ import {STATUS_STYLE} from '../services/constant'
 
 
 const COLUMNS_SCHEDULE=[
-    {type:'text', label:'Festival name SV', name:'nameSV',  placeholder:'Namn på svenska', required:true, cols:30, maxlength:50,
-        tooltip:'Swedish title of the event'},   
-    {type:'text', label:'Festival name EN', name:'nameEN',  placeholder:'Namn på engelska', required:true, cols:30, maxlength:50,
-        tooltip:'English title of the event'},   
     {type:'select', 
         name:'eventType',  
         label:'Event type',
@@ -30,8 +26,12 @@ const COLUMNS_SCHEDULE=[
         selectValue:'eventType',
         required:true,
         unique:true,
-        tooltip:'Identifies on what page the event shall be shown'
+        tooltip:'Identifies on what event page the event shall be shown'
     },    
+    {type:'text', label:'Festival name SV', name:'nameSV',  placeholder:'Namn på svenska', required:true, cols:30, maxLength:50,
+        tooltip:'Swedish title of the event'},   
+    {type:'text', label:'Festival name EN', name:'nameEN',  placeholder:'Namn på engelska', required:true, cols:30, maxLength:50,
+        tooltip:'English title of the event'},   
     {type:'date', label:'Startdate reg', name:'openRegDate',  required:true, tooltip:'Start registration date'},    
     {type:'time', label:'Starttime reg', name:'openRegTime',  required:true, tooltip:'Start registration time at date above'},    
     {type:'date', label:'Startdate', name:'startDate',  required:true, tooltip:'Start date for event'},    
@@ -44,11 +44,11 @@ const COLUMNS_SCHEDULE=[
 ]
 
 const COLUMNS_PACKAGE=[
-    {type:'text', label:'Shortname', name:'packageId', unique:true, required:true, maxlength:50,
-          tooltip:'Unieue package key that is used to map package to registrations'},    
-    {type:'text', label:'Package name', name:'name',  cols:15, required:true, maxlength:500,
+    {type:'text', label:'Shortname', name:'packageId', unique:true, required:true, maxLength:50,
+          tooltip:'Unique package key that is used to map package to registrations'},    
+    {type:'text', label:'Package name', name:'name',  cols:15, required:true, maxLength:500,
           tooltip:'Name of the package shown in registration form'},    
-    {type:'textarea', label:'Description', name:'description',  cols:20, maxlength:1000,
+    {type:'textarea', label:'Description', name:'description',  cols:20, maxLength:1000,
           tooltip:'Full description of the contents of the package'},
     {type:'number', label:'Nbr of WS', name:'wsCount',  required:true,
         tooltip:'Number of units (1,2 or 3) that this workshop has when counting for package pricing'
@@ -60,7 +60,7 @@ const COLUMNS_PACKAGE=[
         type:'select', 
         name:'productType',  
         label:'Product-type',
-        tableName:'tbl_product_type_festival', 
+        tableName:'tbl_package_product_type', 
         selectLabel:'nameEN', 
         selectValue:'productType',
         unique:true,
@@ -81,11 +81,11 @@ const COLUMNS_WORKSHOP=[
 //    {label:'Schedule', name:'scheduleId',  type:'select', tableName:'tbl_schedule_def', selectKey:'scheduleId', selectValue:'scheduleId', hidden:true},    
 //    {label:'Workshop def', name:'workshopId',  type:'select', placeholer:'tbl_workshop_def', selectKey:'workshopId', selectValue:'workshopId'},    
 //    {label:'Workshop id', name:'workshopId',  type:'text', placeholer:'Workshop Id'},    
-    {type:'text', label:'Shortname', name:'workshopId', unique:true, required:true, maxlength:50, 
+    {type:'text', label:'Shortname', name:'workshopId', unique:true, required:true, maxLength:50, 
         tooltip:'Per festival unique key that is used to connect registration with the proper workshop'},    
-    {type:'text', label:'Workshop name', name:'name',  required:true, unique:true, cols:15, maxlength:500, 
+    {type:'text', label:'Workshop name', name:'name',  required:true, unique:true, cols:15, maxLength:500, 
         tooltip:'Name of the workshop shown in the registration form '},    
-    {type:'textarea', label:'Description', name:'description',  placeholder:'Description', unique:true, cols:20, maxlength:1000, 
+    {type:'textarea', label:'Description', name:'description',  placeholder:'Description', unique:true, cols:20, maxLength:1000, 
         tooltip:'Name of the workshop'},    
     {type:'number', label:'Nbr of WS', name:'wsCount', required:true, 
         tooltip:'Number workhops this workshop shall count for in package counting (Some counts as 2 or 3)'},  
@@ -93,8 +93,8 @@ const COLUMNS_WORKSHOP=[
         tooltip:'The number of minutes that the workshop lasts'},  
     {type:'select', 
         name:'productType',  
-        label:'Product-type',
-        tableName:'tbl_product_type_festival', 
+        label:'Product type',
+        tableName:'tbl_workshop_product_type', 
         selectLabel:'nameEN', 
         selectValue:'productType',
         unique:true,
@@ -286,9 +286,19 @@ export default () =>
         const startDate = schedules?schedules[0]?schedules[0].startDate?schedules[0].startDate:'2000-01-01':'2000-01-02':'2000-01-03'
         const d = new Date(startDate);
         let year = d.getFullYear();
+        let ans = ''
+
+        if (!templateName) {
+            ans = window.prompt("Please enter the desired template name");
+            if (ans === "") {
+                return 
+            } else {    
+                setTemplateName(ans)
+            } 
+        } 
 
         const data = {
-            templateName, 
+            templateName:templateName?templateName:(eventType + '_' + year), 
             packages:list.map(it=>({...it, templateName, eventType, year}))
         }
         serverPost('/updateFestivalTemplate', data, handleDefaultReply)
@@ -300,8 +310,19 @@ export default () =>
         const d = new Date(startDate);
         let year = d.getFullYear();
 
+
+        if (!templateName) {
+            let ans = ''
+            ans = window.prompt("Please enter the desired template name");
+            if (ans === "") {
+                return 
+            } else {    
+                setTemplateName(ans)
+            } 
+        } 
+
         const data = {
-            templateName, 
+            templateName:templateName?templateName:(eventType + '_' + year), 
             workshops:list.map(it=>({...it, templateName, eventType, year})),
         }
         serverPost('/updateFestivalTemplate', data, handleDefaultReply)
@@ -332,8 +353,8 @@ export default () =>
         }
     }    
    
-    const handleFetchTemplate = value => {
-        serverFetchData('/fetchFestivalTemplate?templateName=' + value, handleFetchTemplateReply)
+    const handleFetchTemplate = templateName => {
+        serverFetchData('/fetchFestivalTemplate?templateName=' + templateName, handleFetchTemplateReply)
     }    
 
     const handleReleaseProductionReply = data => {
@@ -362,6 +383,11 @@ export default () =>
             packages:[...packages.filter(it=>it.checked).map(it=>({...it, templateName}))]
             */
         }
+        if (!window.confirm("Are you sure you want to release template " + templateName + ' to production ?')) {
+            // Cancel
+            return
+        }
+
         serverPost('/releaseFestival', data, handleReleaseProductionReply)
     }    
 
@@ -475,7 +501,7 @@ export default () =>
             {schedules?   
                 <>
                     <Tooltip title='Save the festival template'>
-                        <IconButton onClick={handleUpdate}>
+                        <IconButton type='submit' onClick={handleUpdate}>
                             <SaveIcon />
                         </IconButton>    
                     </Tooltip>    

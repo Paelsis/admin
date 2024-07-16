@@ -235,10 +235,12 @@ const fieldsFunc = language =>([
 
     },
     {
-        name:'phone',
         type:'text',
+        name:'phone',
         label:TEXT.phone.label[language],
-        tooltip: TEXT.phone.tooltip[language]
+        tooltip: TEXT.phone.tooltip[language],
+        minLength:10, 
+        maxLength:20,
     },
     {
         name:'address',

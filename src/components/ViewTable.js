@@ -1,27 +1,28 @@
 import {isNormalVariable} from '../services/functions'
+import {IconButton, Button, Tooltip} from '@mui/material';
 
 const styles = {
     container:{
-        /*
         overflow:'auto',
-        marginLeft:'auto',
-        marginRight:'auto',
-        */
+        width:'100vw'
     },
     th:{
         padding:4,
     },
     td:{
-        padding:4
+        fontSize:'normal',
+        padding:20
     }
 }
 
+const _Edit = record => 
+    <small>
+        {JSON.stringify(record)}
+    </small>
 
-export default ({cols, list, buttons}) => {
-    const colons = cols?cols:list.length > 0?Object.keys(list[0]).filter(key=>isNormalVariable(list[0][key])):[]
-    return(
-    list?    
-    <div className='container'>
+
+const _View = ({colons, buttons, list})=>
+    <div style={styles.container}>
         <table>
             <thead>
                 <tr>
@@ -36,21 +37,50 @@ export default ({cols, list, buttons}) => {
                 </tr>
             </thead>
             <tbody>
-                {list.map(li=>
+                {list.map((li, idx)=>
                     <tr>
                         {colons.map(col=>
                             <td style={styles.td}>{(typeof li[col] == "boolean")?(li[col]?'true':'false'):li[col]}</td>
                         )}    
                         {buttons?buttons.map(button =>
-                            <td style={styles.td}>
-                                <button onClick={()=>button.onClick(li)}>{button.label?button.label:'Button'}</button>
-                            </td>
-                        ):null}
+                            <>
+                                {button.icon?
+                                    <td style={styles.td}>
+                                        <Tooltip title={button.tooltip}>
+                                            <IconButton onClick={()=>button.onClick?button.onClick(idx):null} >
+                                                {(typeof button.icon === 'function')?button.icon(idx):button.icon}
+                                            </IconButton>    
+                                        </Tooltip>    
+                                    </td>
+                                :   
+                                    <td style={styles.td}>
+                                        <Tooltip title={button.tooltip}>
+                                            <Button onClick={()=>button.onClick?button.onClick(idx):null}>
+                                                {button.label?button.label:'Button'}
+                                            </Button>
+                                        </Tooltip>   
+                                    </td>
+                                }    
+                            </>
+                    ):null}
                     </tr>
                 )}
             </tbody>
         </table>
     </div>
-    :<h1>No list</h1>
+    
+
+
+export default ({cols, edit, list, setList, buttons}) => {
+    const colons = cols?cols:list.length > 0?Object.keys(list[0]).filter(key=>isNormalVariable(list[0][key])):[]
+    return(
+    list?(edit !==undefined)?
+        <_Edit record={list[edit]} setList={setList} />
+    :
+        <>
+        <_View list={list} buttons={buttons} colons={colons} />
+        </>
+    :
+        <h1>No list</h1>
     )
 }

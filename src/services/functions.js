@@ -1,8 +1,6 @@
 import { generateEditorStateFromValue, emptyEditorState } from '../components/DraftEditor'
 
-
     
-
 export const labelSwedish = name => {
     switch (name.toLowerCase()) {
         case 'goteborg':return 'Göteborg'
@@ -111,8 +109,84 @@ export function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function calcAmount(packages, workshops, currency) {
+    const PRODUCT_TYPE={
+        // Workshops
+        BASIC_WORKSHOP:'BASIC_WORKSHOP',
+        REGULAR_WORKSHOP:'REGULAR_WORKSHOP',
+        MILONGA:'MILONGA', 
+    
+        // Packages
+        DANCE_PACKAGE:'DANCE_PACKAGE',  
+        BASIC_PACKAGE:'BASIC_PACKAGE',
+        REGULAR_PACKAGE:'REGULAR_PACKAGE',
+    }
+    const wsBasic = workshops.find(ws=>ws.productType===PRODUCT_TYPE.BASIC_WORKSHOP)
+    const wsRegular = workshops.find(ws=>ws.productType===PRODUCT_TYPE.REGULAR_WORKSHOP)
+    const priceBasic = wsBasic?Number(wsBasic.priceSEK):250
+    const priceRegular = wsRegular?Number(wsRegular.priceSEK):250
+    const foundLuxury = packages.find(pr=>pr.allWorkshops)
+    const maxPrice = foundLuxury?Number(foundLuxury.priceSEK):10000
+    const foundAllWorkshops = packages.find(it=>it.checked && it.allWorkshops)?true:false
+    const dancePackageIncluded = packages.find(it => (it.productType === PRODUCT_TYPE.BASIC_PACKAGE || (it.productType === PRODUCT_TYPE.REGULAR_PACKAGE) && it.checked))?true:false 
+    const dancePackageChecked = packages.find(it => (it.checked && (it.productType === PRODUCT_TYPE.DANCE_PACKAGE)))?true:false
+    let cntWsBasic = 0
+    let cntWsRegular = 0
+    let cntWsPackageBasic = 0
+    let cntWsPackageRegular = 0
+    let amount = 0 
 
+    if (foundAllWorkshops) {
+        /* All workshops and milongas (luxury package) */
+        return maxPrice;
+    } else {
+        packages.filter(pa=>pa.checked).forEach(pa=> {  
+            switch (pa.productType) {
+                case PRODUCT_TYPE.BASIC_PACKAGE:
+                    cntWsPackageBasic += Number(pa.wsCount)
+                    amount += pa?pa.priceSEK?Number(pa.priceSEK):-1000000:-2000000
+                    break
+                case PRODUCT_TYPE.REGULAR_PACKAGE:
+                    cntWsPackageRegular += Number(pa.wsCount)
+                    amount += pa?pa.priceSEK?Number(pa.priceSEK):-1000000:-2000000
+                    break
+                case PRODUCT_TYPE.DANCE_PACKAGE:
+                    amount += dancePackageIncluded?0:(pa?pa.priceSEK?Number(pa.priceSEK):-1000000:-2000000)    
+                    break    
+            }    
+        })    
+        /* Packages and workshops */
+        workshops.filter(ws=>ws.checked).forEach(ws=> {  
+            // Workshop and package counters
+            switch (ws.productType) {
+                case PRODUCT_TYPE.BASIC_WORKSHOP:
+                    cntWsBasic += ws.wsCount
+                    // Add price if more than packages ws-count
+                    if (cntWsBasic > cntWsPackageBasic) {
+                        amount += ws?ws.priceSEK?Number(ws.priceSEK):-1000000:-2000000
+                    }
+                    break
+                case PRODUCT_TYPE.REGULAR_WORKSHOP:
+                    cntWsRegular += ws.wsCount
+                    // Add price if more than packages ws-count
+                    if (cntWsRegular > cntWsPackageRegular) {
+                        amount += ws?ws.priceSEK?Number(ws.priceSEK):-1000000:-2000000
+                    }    
+                    break
+                case PRODUCT_TYPE.MILONGA:
+                    amount += (dancePackageIncluded || dancePackageChecked)?0:(ws?ws.priceSEK?Number(ws.priceSEK):-1000000:-2000000)    
+                    break    
+                }
+        })        
 
+        if (cntWsPackageBasic > 0 && cntWsBasic > cntWsPackageBasic) {
+                amount += Math.max((cntWsBasic - cntWsPackageBasic - Math.max(cntWsPackageRegular - cntWsRegular, 0)), 0) * priceBasic
+        }    
+
+        amount = Math.min(amount, maxPrice) 
+        return amount
+    }
+}
 
     
 
