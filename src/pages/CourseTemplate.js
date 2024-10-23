@@ -1,17 +1,15 @@
 import {useState, useEffect} from 'react'
-import Picklist, {PicklistGroupBy, Select} from '../components/Picklist'
-import {Button, IconButton} from '@mui/material';
+import {PicklistButtonGroups, Select} from '../components/Picklist'
+import {CircularProgress, IconButton} from '@mui/material';
 import SaveIcon from '@mui/icons-material/SaveOutlined'
 import SaveAsIcon from '@mui/icons-material/SaveAsOutlined';
-import AddIcon from '@mui/icons-material/Add'
-import CopyIcon from '@mui/icons-material/ContentCopy'
 import MoveUpIcon from '@mui/icons-material/MoveUp';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import Tooltip from '@mui/material/Tooltip';
 import EditTableWithSelect from '../components/EditTableWithSelect';
 import { serverPost } from '../services/serverPost';
-import { delay } from '../services/functions'
+import { uniqueObjectList } from '../services/functions'
 import { serverFetchData } from '../services/serverFetch';
 import StatusMessage from '../components/StatusMessage';
 import {STATUS_STYLE} from '../services/constant'
@@ -76,7 +74,28 @@ export default () =>
     const [templateName, setTemplateName] = useState()
     const [courses, setCourses] = useState([])
     const [status, setStatus] = useState({})
+    const [groups, setGroups] = useState()
     const [reloadCounter, setReloadCounter]=useState(0)
+
+    const sortFunc = (a,b)=>a.startDate.substring(0,4).localeCompare(b.startDate.substring(0,4))
+
+    const handleReply = reply => {
+        const data = reply.data?reply.data:reply
+        if (data.status === 'OK' || data.status === 'true' || data.status) {
+            const labelName = 'templateName'
+            const list =  uniqueObjectList(data.result, labelName).sort(sortFunc)
+            const groups = Object.groupBy(list, it=>it.startDate.substring(0,4))
+            setGroups(groups)
+        } else {
+            alert('ERROR: Call to get data for picklist failed. Message:' + data.message?data.message:'')
+        }
+    }    
+
+    useEffect(()=>{
+            const url = '/fetchRows?tableName=tbl_course_template'
+            serverFetchData(url, handleReply)
+    }, [reloadCounter])
+
 
     const handleReplyWithoutOKStatus = data => {
         const dt = new Date().toLocaleString()
@@ -221,6 +240,8 @@ export default () =>
         }
     }    
 
+
+
     const handleDeleteTemplateProduction = () => {
         const defaultValue = templateName?templateName:'All'
         const ans = window.prompt("Please enter the template name (or All) for the template you want to remove from production", defaultValue);
@@ -270,23 +291,20 @@ export default () =>
 
     return(
         <div style={{position:'relative'}}>
-            <PicklistGroupBy 
-                labelButton='Select Template' 
-                tableName='tbl_course_template' 
-                groupBy={'year'}
+            <PicklistButtonGroups 
+                groups={groups}
+                labelButton='Template'
                 labelName='templateName' 
                 valueName='templateName' 
                 value={templateName} 
-                handleClick={handleFetchTemplate} unique={true} 
-                reloadCounter={reloadCounter}
+                handleClick={handleFetchTemplate}
                 close={true} // Close after pick
             />
             {courses?courses.length > 0?
-                <div className="columns is-centered">
+                <div className="columns is-centered" style={{paddingTop:20}}>
                     <div className='is-size-3'>{templateName}</div>
                 </div>
             :null:null}    
-            {courses?<h1 className="is-size-4">Courses</h1>:null}
             <EditTableWithSelect 
                 columns={COLUMNS_COURSE} 
                 list={courses} 
@@ -327,7 +345,7 @@ export default () =>
                     </IconButton>    
                     </Tooltip>    
                 </>
-            :null}
+            :<CircularProgress />}
             <StatusMessage status={status} />
         </div>
     )

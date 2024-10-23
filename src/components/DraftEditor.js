@@ -4,6 +4,8 @@ import { Editor } from 'react-draft-wysiwyg';
 import "draft-js/dist/Draft.css";
 import '@draft-js-plugins/static-toolbar/lib/plugin.css';
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import htmlToDraft from 'html-to-draftjs'
+
 import '../App.css';
 
 /*
@@ -44,7 +46,7 @@ export const emptyEditorState = () => {
 } 
 
 export const generateEditorStateFromValue = value => {
-  const blocksFromHTML = convertFromHTML(value)
+  const blocksFromHTML = htmlToDraft(value)
   const content = ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap)
   return EditorState.createWithContent(content)
 }

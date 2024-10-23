@@ -9,14 +9,12 @@ const defaultStyle = {
 export const ViewBar = props => {
     const {depth, groupByArr, list} = props
     const groupByItem = groupByArr[depth]
-    const buttons = groupByItem.buttons?groupByItem.buttons:[]
     const style = groupByItem.style?groupByItem.style:defaultStyle
     const cols = groupByItem.labelFields
-    const viewClassName=groupByItem.viewClassName
     return(
-        <div className={viewClassName}>
+        <div style={style}>
             {cols.map(col=>
-                    <span style={{...style}}>
+                    <span style={{backgroundColor:'transparent'}}>
                         {list[0][col]}
                     </span>
             )}

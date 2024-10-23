@@ -8,10 +8,10 @@ import Home from "./pages/Home"
 import Layout from "./pages/Layout"
 import FirebaseSignin from './signin/FirebaseSignin';
 import CourseTemplate from "./pages/CourseTemplate"
-import CourseSchema from "./pages/CourseSchema"
-import CourseSchemaMenu from "./pages/CourseSchemaMenu"
 import CourseRegistration from "./components/CourseRegistration"
+import CourseSchema from "./pages/CourseSchema"
 import ListCourseRegistrations from "./pages/ListCourseRegistrations"
+import CourseSchemaMenu from "./pages/CourseSchemaMenu"
 import FestivalTemplate from "./pages/FestivalTemplate"
 import FestivalSchema from "./pages/FestivalSchema"
 import FestivalChangeRegistration from "./pages/FestivalChangeRegistration"
@@ -20,21 +20,21 @@ import ListFestivalRegistrationWorkshops from "./pages/ListFestivalRegistrationW
 import Other from "./pages/Other"
 import Table from "./pages/Table"
 import Text from "./pages/Text"
-import MailText from "./pages/MailText"
-import TextAll from "./pages/TextAll"
 import Txt from "./pages/Txt"
 import Image from "./pages/Image"
 import Html from "./components/HtmlView"
+import ListFestivalRegistrations from "./components/ListFestivalRegistrations"
 import Menu from "./components/Menu"
-import TeacherNote from "./pages/TeacherNote"
 import NoPage from "./pages/NoPage"
 import { getAuth, onAuthStateChanged} from 'firebase/auth';
+import useSharedState from '../store'
 import 'bulma/css/bulma.min.css';
 import './App.css';
 
 function App() {
   const auth = getAuth()
   const [email, setEmail] = useState()
+  const [sharedState, setSharedState] = useSharedState()
   useEffect(()=>
       onAuthStateChanged(auth, user => {
           if (user) {
@@ -42,7 +42,7 @@ function App() {
           }  
         }
       ), [])
-
+  
   return (
     <div className='App content'>
       <BrowserRouter>
@@ -58,7 +58,7 @@ function App() {
                 <Route path="courseTemplate" element={<CourseTemplate />} />
                 <Route path="courseRegistration" element={<CourseRegistration />} />
                 <Route path="festivalTemplate" element={<FestivalTemplate />} />
-                <Route path="festivalSchema" element={<FestivalSchema />} />
+                <Route path="FestivalSchema" element={<FestivalSchema />} />
                 <Route path="festivalChangeRegistration" element={<FestivalChangeRegistration />} />
                 <Route path="table/:tableName" element={<Table />} />
                 <Route path="courseSchema" element={<CourseSchema />} />
@@ -66,10 +66,7 @@ function App() {
                 <Route path="listFestivalRegistrations" element={<ListFestivalRegistrations />} />
                 <Route path="listFestivalRegistrationWorkshops" element={<ListFestivalRegistrationWorkshops />} />
                 <Route path="courseSchemaMenu" element={<CourseSchemaMenu />} />
-                <Route path="teacherNote" element={<TeacherNote />} />
                 <Route path="text" element={<Text />} />
-                <Route path="mailText" element={<MailText />} />
-                <Route path="textAll" element={<TextAll />} />
                 <Route path="txt" element={<Txt />} />
                 <Route path="image" element={<Image />} />
                 <Route path="html" element={<Html />} />

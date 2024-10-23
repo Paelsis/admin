@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import firebaseApp from '../services/firebaseApp'
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged} from 'firebase/auth';
 import Button from '@mui/material/Button';
+import {useSharedState} from '../store'
 
 const styles = {
   container:{
@@ -38,24 +39,28 @@ const styles = {
   },
 }
 
-const FirebaseSignin = () => {
+export default () => {
   const navigate = useNavigate()
   const [statusColor, setStatusColor] = useState({color:'white', backgroundColor:'green'})
   const [credentials, setCredentials] = useState(undefined)
+  // const [sharedState, setSharedState] = useSharedState()
   const [uid, setUid] = useState(undefined)
   const auth = getAuth()
 
-  useEffect(()=>onAuthStateChanged(auth, user => {
-    if (user) {
-      navigate('/home')
-    }  
-  }), [])
+  useEffect(()=>
+    onAuthStateChanged(auth, user => {
+          if (user) {
+              navigate('/home')
+          }  
+        }
+  ), [])
 
   const handleSignin = e => {
     e.preventDefault()
     setStatusColor('grey') 
-  
-  if (credentials?(credentials.email && credentials.password):false) {
+
+
+    if (credentials?(credentials.email && credentials.password):false) {
     signInWithEmailAndPassword(auth, credentials.email, credentials.password)
       .then(userCredential => {
         // Signed in 
@@ -88,7 +93,7 @@ const FirebaseSignin = () => {
                 <label>
                 Logga in med e-mail och lösenord<p/>
                 </label>
-                <input style={inputStyle} name='email' type='email' placeholder='E-mail' onChange={handleChange} />
+                <input autoFocus style={inputStyle} name='email' type='email' placeholder='E-mail' onChange={handleChange} />
                 <p/>
                 <input style={inputStyle} name='password' type='password' placeholder='Lösenord' onChange={handleChange} />
                 <p/>
@@ -106,15 +111,11 @@ const FirebaseSignin = () => {
           </div>
         </>
     :
-        <div style={styles.container}>
-          <h4>You are signed in</h4>
-          <Button style={buttonStyle} variant="outlined" onClick={() => handleSignout()}>
-              Signout
-          </Button>          
-        </div>
-      
+      <div style={styles.container}>
+        <h4>You are signed in</h4>
+        <Button style={buttonStyle} variant="outlined" onClick={() => handleSignout()}>
+            Signout
+        </Button>          
+      </div>
   )
-}  
- 
-
-export default FirebaseSignin
+}

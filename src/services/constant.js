@@ -1,3 +1,6 @@
+export const PRODUCTION = process.env.NODE_ENV === 'production'
+export const DEVELOPMENT = process.env.NODE_ENV === 'development'
+
 export const STATUS_STYLE={
     DEFAULT:{backgroundColor:'gray', color:'white'},
     OK:{backgroundColor:'green', color:'white'},
@@ -11,3 +14,4 @@ export const EVENT_TYPE = {
     SUMMER:'SUMMER',
     FESTIVALITO:'FESTIVALITO'
 }
+

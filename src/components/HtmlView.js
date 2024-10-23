@@ -1,7 +1,5 @@
 import {useState, useEffect} from "react"
-import { useLocation } from 'react-router-dom';
-import {serverFetchData} from '../services/serverFetch'
-import EditText, {updateList, compareFunc} from '../components/EditText'
+import EditText, {updateTextList, compareTextFunc} from '../components/EditText'
 
 const styles = {
     active:{backgroundColor:'black', color:'yellow'},
@@ -17,18 +15,16 @@ export default props => {
 
     useEffect(()=>{ 
         const keys = {groupId, textId, language}
-        const found = list?list.find(it => compareFunc(it, keys) === 0):undefined
+        const found = list?list.find(it => compareTextFunc(it, keys) === 0):undefined
         setRecord(found?found:DEFAULT_RECORD)
     },[groupId, textId, language])
 
     const setRecordAndUpdateList = rec => {    
         setRecord(rec)
-        setList(updateList(rec, list))
+        setList(updateTextList(rec, list))
     }    
     
     return(
         <EditText record={record} setRecord={setRecordAndUpdateList} language={language} />
     )    
 }
-
-

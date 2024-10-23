@@ -78,6 +78,6 @@ const apiBaseUrl = process.env.REACT_APP_API_BASE_URL
 
 export const serverPost = (irl,  record, handleReply) => serverPostApi(apiBaseUrl, irl, record, handleReply)
 export const replaceRow = (tableName, record, handleReply) => replaceRowApi(apiBaseUrl, tableName, record, handleReply)
-export const deleteRow = (tableName, record, handleReply) => deleteRowApi(apiBaseUrl, tableName, record, handleReply)
+export const deleteRow = (tableName, id, handleReply) => deleteRowApi(apiBaseUrl, tableName, id, handleReply)
 
 

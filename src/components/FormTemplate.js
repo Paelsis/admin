@@ -39,20 +39,23 @@ export default props => {
         }    
     }
 
+    /*
+    <Tooltip 
+    title={<h4 style={{textAlign:'left' , fontSize:20, fontWeight:900, color:'white'}}>{fld.tooltip}</h4>}
+    open={fld.tooltip?undefined:false}
+    >    
+    </Tooltip>
+    
+    */
     const isValid = fields.find(fld => !isValidFld(fld))
     return(
         <div>   
                 <form onSubmit={handleSubmit?handleSubmit:undefined}>
                     <div>
                         {fields.filter(fld=>!isHidden(fld)).map((fld, index) => 
-                            <Tooltip 
-                                title={<h4 style={{textAlign:'left' , fontSize:20, fontWeight:900, color:'white'}}>{fld.tooltip}</h4>}
-                                open={fld.tooltip?undefined:false}
-                            >    
                                 <div>
                                     <FormField inputRef={fld.focus?inputRef:undefined} key={index}  fld={fld} value={value} setValue={setValue} handleKeyPress={handleKeyPress} />
                                 </div>
-                            </Tooltip>
                         )}
                     </div>
                     {fields && false?
@@ -67,24 +70,25 @@ export default props => {
                                 <Tooltip 
                                     title={<h2>{button.tooltip}</h2>} 
                                     enterDelay={500} 
+                                    followCursor={true}
                                     open={button.tooptip?undefined:false}
                                 >
-                                <span>
-                                    {
+                                    <span>
+                                        {
                                         <Button 
-                                            type={button.type} 
-                                            variant={button.variant?button.variant:"outlined"}
-                                            sx={button.sx}
-                                            style={button.style}
-                                            color={"inherit"}
-                                            onClick={button.handleClick?button.handleClick:undefined}
-                                        >
-                                            {button.label}
-                                        </Button>
-                                    }                      
-                                    &nbsp;
-                                </span>
-                                </Tooltip>
+                                                type={button.type} 
+                                                variant={button.variant?button.variant:"outlined"}
+                                                sx={button.sx}
+                                                style={button.style}
+                                                color={"inherit"}
+                                                onClick={button.handleClick?button.handleClick:undefined}
+                                            >
+                                                {button.label}
+                                            </Button>
+                                        }                      
+                                        &nbsp;
+                                    </span>
+                                    </Tooltip>                                
                             )}
                             &nbsp;
                         </div>

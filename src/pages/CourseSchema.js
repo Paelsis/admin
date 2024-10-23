@@ -55,49 +55,73 @@ const defaultStyle = {
 }
 
 const styles = {
-    button:{color:'blue', 
-        borderColor:'blue', 
+    button:{color:'grey', 
+        borderColor:'grey', 
+        padding:2,
+        fontSize:12
+    },
+    infoButton:{color:'whiteSmoke', 
+        borderColor:'whiteSmoke', 
         padding:2,
         fontSize:12
     },
     icon:{
         padding:0, 
         background:'transparent', 
-        color:'blue', 
-        borderColor:'blue'
+        color:'grey', 
+        borderColor:'grey'
     },
     table:{
         borderCollapse:'collapse',
         //border:'1px solid red',
+        borderRadius:16
+    },
+    tbody:{
+        //border:'1px solid red',
+        borderRadius:16,
+        padding:5,
+    },
+    th:{
+        background:'darkBlue',
+        color:'whiteSmoke',
+        padding:5,
     },
     tr:{
-        background:'whiteSmoke'
+        background:'whiteSmoke',
+        padding:5
+    },
+    cities:{
+        margin:'auto',
+        textAlign:'center', 
+        fontSize:32, 
+    },
+    types:{
+        margin:'auto',
+        padding:10, 
+        fontSize:24
     },
     course:{
+        margin:'auto', 
         padding:10, 
         fontSize:14, 
-        margin:'auto', 
         backgroundColor:'transparent',
-        borderRadious:8,
+        borderRadius:8,
     }
 }
 
 const ViewCities = props => {
     const {list} = props
-    const style = {width:'100%', textAlign:'center', fontSize:32, }
     return(
-            <div style={style}>
-                {list[0].city}
-            </div>
+        <div style={styles.cities}>
+            {list[0].city}
+        </div>
    )
 }
 
-
 const ViewCourseTypes = props => {
     const {list} = props
-    const style = {padding:10, fontSize:24}
     return(
-        <div style={style}>
+        <div style={styles.types}>
             {list[0].courseTypeName}
         </div>
     )
@@ -114,14 +138,14 @@ const ViewCourses = props => {
         {
             // icon:<HowToRegIcon />,
             label:TEXT.register[language],
-            handleClick:course=>navigate('/registration', {state:course}),
+            handleClick:course=>navigate('/courseRegistration', {state:course}),
             style:styles.icon,
             title:TEXT.titleButton[language]
         },
     ]
     const infoButton = {
         icon:<InfoIcon />,
-        style:styles.button,
+        style:styles.infoButton,
         handleClick:courseId=>{setInfo(info?undefined:courseId)}, 
         title:TEXT.titleInfo[language],
     }
@@ -151,74 +175,74 @@ const ViewCourses = props => {
     //const handleClickCity = url => alert(url)
     return(
         <div style={styles.course}>
-        <Drawer open={info?true:false}  onClose={()=>setInfo(undefined)}>
-           <Info groupId={'Course'} textId={info} onClose={()=>setInfo(undefined)} />
-        </Drawer>
+            <Drawer open={info?true:false}  onClose={()=>setInfo(undefined)}>
+            <Info groupId={'Course'} textId={info} onClose={()=>setInfo(undefined)} />
+            </Drawer>
 
-        <table style={styles.table}>
-            <thead style={{textAlign:'center'}}>
-                <tr>
-                    <th colSpan={colSpan} style={{color:'whitesmoke', fontSize:16}}>{list[0].nameEN}</th>
-                    {infoButton?
-                            <th style={{color:'whitesmoke'}}>
-                                <Tooltip title={infoButton.title}>
-                                    <IconButton style={styles.infoIcon} onClick={()=>infoButton.handleClick(list[0].courseId)}>
-                                        {infoButton.icon}
-                                    </IconButton>   
-                                </Tooltip> 
-                            </th>
-                    :null}
-                </tr>
-                {headerFields?
+            <table style={styles.table}>
+                <thead style={{textAlign:'center'}}>
                     <tr>
-                        {headerFields.map(col=>
-                            <th style={{color:'whitesmoke', fontSize:10}}>{col}</th>
-                        )}
-                    </tr>    
-                :null}           
-            </thead>
-            <tbody>
-                {sortedList.map(li=>
-                    <tr style={styles.tr}>
-                        {columns.map(col=>
-                            anchorField[col]?
-                                <Tooltip title={anchorField[col](li)}>
-                                <td style={{padding:2}}><a onClick={e=>{e.preventDefault(); window.open(li.urlLocation, '_blank')}}>{li[col]}</a></td>
-                                </Tooltip>
-                            :hoverField[col]?
-                                <Tooltip title={hoverField[col](li)}>
-                                <td style={{padding:2}}><a onClick={e=>{e.preventDefault(); alert(hoverField[col](li))}}>{li[col]}</a></td>
-                                </Tooltip>
-
-                            :
-                                <td style={{padding:2}} >{li[col]}</td>
-                        )}
-                        {buttons?buttons.map(but=>
-                            <td style={{margin:2, padding:2}}>
-                            {but.icon?
-                                <Tooltip title={but.title}>
-                                   <IconButton size='small' style={but.style} onClick={()=>but.handleClick(li)}>
-                                        {but.icon}
-                                    </IconButton>    
-                                </Tooltip>
-                            :
-                                <Tooltip title={but.title}>
-                                    <Button size='small' variant='outlined' style={but.style} onClick={()=>but.handleClick(li)}>
-                                        {but.label?but.label:'No label'}
-                                    </Button>                            
-                                </Tooltip>
-                            }
-                            </td>
-                        ):null}    
+                        <th colSpan={colSpan} style={styles.th}>{list[0].nameEN}</th>
+                        {infoButton?
+                                <th style={styles.th}>
+                                    <Tooltip title={infoButton.title}>
+                                        <IconButton style={styles.infoButton} onClick={()=>infoButton.handleClick(list[0].courseId)}>
+                                            {infoButton.icon}
+                                        </IconButton>   
+                                    </Tooltip> 
+                                </th>
+                        :null}
                     </tr>
-                )}
-            </tbody>      
-        </table>
+                    {headerFields?
+                        <tr>
+                            {headerFields.map(col=>
+                                <th style={styles.th}>{col}</th>
+                            )}
+                        </tr>    
+                    :null}           
+                </thead>
+                <tbody style={styles.tbody}>
+                    {sortedList.map(li=>
+                        <tr style={styles.tr}>
+                            {columns.map(col=>
+                                anchorField[col]?
+                                    <Tooltip title={anchorField[col](li)}>
+                                    <td style={{padding:2}}><a onClick={e=>{e.preventDefault(); window.open(li.urlLocation, '_blank')}}>{li[col]}</a></td>
+                                    </Tooltip>
+                                :hoverField[col]?
+                                    <Tooltip title={hoverField[col](li)}>
+                                    <td style={{padding:2}}><a onClick={e=>{e.preventDefault(); alert(hoverField[col](li))}}>{li[col]}</a></td>
+                                    </Tooltip>
 
-
- 
+                                :
+                                    <td style={{padding:2}} >{li[col]}</td>
+                            )}
+                            {buttons?
+                                buttons.map(but=>
+                                    <td style={{margin:2, padding:2}}>
+                                        {but.icon?
+                                            <Tooltip title={but.title}>
+                                                <IconButton size='small' style={but.style} onClick={()=>but.handleClick(li)}>
+                                                    {but.icon}
+                                                </IconButton>    
+                                            </Tooltip>
+                                        :
+                                            <Tooltip title={but.title}>
+                                                <Button size='small' variant='outlined' style={but.style} onClick={()=>but.handleClick(li)}>
+                                                    {but.label?but.label:'No label'}
+                                                </Button>                            
+                                            </Tooltip>
+                                        }
+                                    </td>
+                                )
+                            :
+                                null
+                            }    
+                        </tr>
+                    )}
+                </tbody>      
+            </table>
         </div>
-
     )
 }
 
@@ -258,12 +282,9 @@ export default  () => {
     },[language])
 
     return(
-        <>
-            {list?
+            list?
                 <GroupByFlat depth={0} groupByArr={groupByArr} list={list} language={language} />
             :
-                <CirkularProgress color={'whiteSmoke'} style={{margin:'auto', width:'100vw'}} />
-            }
-        </>
+                <CirkularProgress color={'whiteSmoke'} />
     )
 }

@@ -15,16 +15,18 @@ import { useNavigate }  from 'react-router-dom';
 export default () => {
   const [isActive, setIsActive] = useState(false)
   const [sharedState, setSharedState] = useSharedState()
+  // const [email, setEmail] = useState()
   const language = sharedState.language
-  const [email, setEmail] = useState()
-  const handleLogin = () => alert('handleLogin')
   const navigate = useNavigate()
   const auth = getAuth()
-  useEffect(()=>onAuthStateChanged(auth, user => {
-    if (user) {
-      setEmail(user.email)
-    }  
-  }), [])
+  useEffect(()=> onAuthStateChanged(auth, user => {
+          if (user) {
+            // setEmail(user.email)
+            setSharedState({...sharedState, email:user.email})
+          }  
+      }
+  ), [])
+  const email = sharedState.email
 
   const setLanguage = language => setSharedState({...sharedState, language})
 
@@ -146,8 +148,8 @@ export default () => {
           <div className="navbar-end">
             <div className="navbar-item">
               <div className="buttons">
-                {email?
-                  <a className="button is-dark" onClick={()=>{signOut(auth); setEmail(undefined); navigate('/signin')}}>
+                {sharedState.email?
+                  <a className="button is-dark" onClick={()=>{signOut(auth); setSharedState({...sharedState, email:undefined}); navigate('/signin')}}>
                     Signout
                   </a>
                 :

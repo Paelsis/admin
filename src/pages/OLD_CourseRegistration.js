@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import CourseSchema from '../components/UNUSED_CourseSchema'
+import CourseSchema from '../components/OTHER_CourseRegistration'
 import { useNavigate }  from 'react-router-dom';
 
 
@@ -37,7 +37,7 @@ export default () => {
         {
             label:'Anmälan',
             type:'button',
-            onClick:course=>navigate('/registration', {state:course})
+            onClick:course=>navigate('/CreateRegistration', {state:course})
         },
         {
             label:'Alert Record',

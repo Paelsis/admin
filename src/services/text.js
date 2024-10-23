@@ -9,26 +9,6 @@ export const TEXT = {
         SV:'Kursen startar ',
         EN:'Course starts '
     },
-    registration:{
-        label:{
-            SV:'Anmälan',
-            EN:'Registration'
-        },
-        tooltip:{
-            SV:'Anmälan till danskurs',
-            EN:'Registrationt to dance course'
-        },
-    },
-    save:{
-        label:{
-            SV:'Spara',
-            EN:'Save'
-        },
-        tooltip:{
-            SV:'Spara värdena i databasen',
-            EN:'Save the values in the database'
-        },
-    },
     role:{
         label:{
             SV:'Dansroll',
@@ -185,14 +165,54 @@ export const TEXT = {
     },
     testmail:{
         label:{
-            SV:'Testa Mail',
-            EN:'Test Mail'
+            SV:'Visa Mail',
+            EN:'Show Mail'
         },    
         tooltip:{
-            SV:'Testa mail funktionaliteten',
-            EN:'Test the mail functionality'
+            SV:'Visa mail som sändes till kursledare och kund',
+            EN:'Show mail that is sent to courseleader and customer'
         }    
     },
+    labelButton:{
+        SV:'Visa mails',
+        EN:'Show mails'
+    },
+    starts:{
+        SV:'Kursen startar ',
+        EN:'Course starts '
+    },
+    registration:{
+        label:{
+            SV:'Anmälan',
+            EN:'Registration'
+        },
+        tooltip:{
+            SV:'Anmälan till danskurs',
+            EN:'Registrationt to dance course'
+        },
+    },
+    save:{
+        label:{
+            SV:'Spara',
+            EN:'Save'
+        },
+        tooltip:{
+            SV:'Spara värdena i databasen',
+            EN:'Save the values in the database'
+        },
+    },
+    success:{
+        SV:'Anmälan lyckades. Kolla din mailbox för bekräftelse-mail',
+        EN:'Registration ready. Check your mailbox for confirmation mail'
+    },
+    successNoMail:{
+        SV:'Anmälan lyckades men SMTP-servern misslyckades skicka bekäftelse mail till dig.',
+        EN:'Registration successful but the SMTP-server failed to sen you a confirmation mail.',
+    },
+    failed:{
+        SV:'Anmälan misslyckades. Kontakta kursansvarig.',
+        EN:'Registration failed. Contact course responsible'
+    }
 }
 
 export const registrationFields = language =>([
@@ -211,6 +231,7 @@ export const registrationFields = language =>([
         {
             name:'firstName',
             type:'text',
+            autoFocus:true, 
             required:true,
             label:TEXT.firstName.label[language],
             tooltip: TEXT.firstName.tooltip[language]

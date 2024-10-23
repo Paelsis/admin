@@ -1,11 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import {serverFetchData} from './services/serverFetch'
-import {compareFunc} from './components/EditText'
 
 const initialState = () => {
   return({  
     pageName:'',
-    language:'EN',
+    language:'SV',
   })
 }
 

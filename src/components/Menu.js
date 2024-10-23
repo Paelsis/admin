@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {EVENT_TYPE} from '../services/constant'
 
-const apiBaseUrl=process.env.REACT_APP_API_BASE_URL;
+// const apiBaseUrl=process.env.REACT_APP_API_BASE_URL;
 
 
 
@@ -302,6 +302,7 @@ const _imageStyle = (width, height, img, opacity, hover, backgroundColor) => ({
   },
 })
 
+/*
 const _ImageNew = (im, hover, width, height, language, handleClick, gtMobile) =>  {
   const {img, link, title, backgroundColor}=im;
   const opacity = hover?0.5:im.opacity
@@ -313,7 +314,8 @@ const _ImageNew = (im, hover, width, height, language, handleClick, gtMobile) =>
       <small style={imageStyle.text}>{hover?im.hoverText[language]:title[language]}</small>
     </div>
   )
-}    
+} 
+*/     
 
 const _Image = (image, hover, width, height, language, handleClick) =>  {
     const {img, link, hoverText, backgroundColor, overlayColor}=image;
@@ -325,7 +327,7 @@ const _Image = (image, hover, width, height, language, handleClick) =>  {
 
       <div style={imageStyle.container} onClick = {()=>handleClick(link)} >
         <div  style={imageStyle.image}>
-            <div style={imageStyle.overlay}/>
+            <div style={imageStyle.overlay} />
         </div> 
         <small style={{...imageStyle.text, fontSize:14}}>{altText}</small>
         <div style={imageStyle.textInverse}>{title}</div>

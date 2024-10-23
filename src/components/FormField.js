@@ -1,11 +1,14 @@
 
 import React, {useState, useEffect, useRef} from 'react';
 import RteEditor from './RteEditor'
-import DraftEditor from './DraftEditor'
+import {defaultDate} from '../services/functions'
+import TextArea from 'react-textarea-autosize';
+import DraftEditor, {emptyEditorState, generateEditorStateFromValue} from './DraftEditor'
 import draftToHtml from 'draftjs-to-html'
 import { convertToRaw } from 'draft-js'
-//import {isAndroidOperatingSystem} from '../services/isAndroid'
-//const isAndroid = isAndroidOperatingSystem()
+
+const DRAFT_EDITOR='draft' 
+const DRAFT_PREFIX = 'draft_'
 
 const styles  = {
     textarea:{
@@ -14,21 +17,334 @@ const styles  = {
     }    
 }
 
-const FormField1 = props => {
-    const {fld, value, setValue, handleKeyPress} = props
-    const supStyle = {color:'red', fontWeight:700, ...props.subStyle?props.subStyle:{}}
+// FormField 
+const FormField = props => {
+    const [editorState, setEditorState] = useState(emptyEditorState())
+    const {fld, key, value, setValue, handleKeyPress} = props
+    const radioValues = fld.radioValues?fld.radioValues.map(it=>it.trim()):[]
+    const selectValues = fld.selectValues?fld.selectValues.map(it=>it.trim()):[]
+    const label = fld.label?fld.label:''
+    const draftName = DRAFT_PREFIX + fld.name
+    const handleChange = e => {
+        setValue({...value, [e.target.name]:e.target.type==='checkbox'?e.target.checked?1:0:e.target.value})
+    }    
 
+    useEffect(()=>{
+        if (fld.type===DRAFT_EDITOR) {
+            let edState = value[fld.name]?generateEditorStateFromValue(value[fld.name]):emptyEditorState()
+            setEditorState(edState)
+        }    
+    }, [])
+
+    const handleChangeWithPre = e => {
+        if (fld.preSetValue) {
+            setValue(fld.preSetValue({...value, [e.target.name]:e.target.type==='checkbox'?e.target.checked?1:0:e.target.value}))
+        } else {
+            setValue({...value, [e.target.name]:e.target.type==='checkbox'?e.target.checked?1:0:e.target.value})
+        }    
+    }    
+    const handleChangeRte = (fld, val) => setValue({...value, [fld]:val})
+    const handleChangeDate = e => {
+        setValue({...value, [e.target.name]:e.target.value < 8?defaultDate():e.target.value});
+    }    
+    const required = fld.required?true:false 
+    const disabled = fld.disabledFunc?fld.disabledFunc(value):false
+    const labelStyle={fontWeight:700, ...props.labelStyle?props.labelStyle:{}}
+    const supStyle = {color:'red', fontWeight:700, ...props.subStyle?props.subStyle:{}}
+    const valueStyle = props.valueStyle?props.valueStyle:{}
+
+        switch (fld.type) {
+            case 'checkbox':
+                    const checked = value[fld.name]?1:0
+                    return(
+                        <p>
+                            <label style={labelStyle}>
+                            <input 
+                                key={key}
+                                size={200} 
+                                type={fld.type} 
+                                checked={checked} 
+                                name={fld.name} 
+                                style={valueStyle}  
+                                required={required} 
+                                ref={fld.ref}
+                                disabled={disabled}
+                                onChange={handleChangeWithPre}
+                            />
+                            &nbsp;<span style={valueStyle}>{label}</span>&nbsp;&nbsp;&nbsp;&nbsp;{required?<sup style={supStyle}>*</sup>:null}
+                            </label> 
+                        </p>
+                    )
+            case 'checkboxes':
+                return(
+                    <p>
+                        <label style={labelStyle}>
+                                {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                        </label>    
+                        <br/>
+                        {fld.names?fld.names.map(name =>
+                            <label>
+                                {name}&nbsp;
+                                <input 
+                                    key={key}
+                                    type={'checkbox'} 
+                                    name={name} 
+                                    checked={value[fld.name]?true:false} 
+                                    required={required} 
+                                    disabled={disabled}
+                                    onChange={handleChange}
+                                />
+                            </label>
+                        ):null}
+                    </p> 
+                )
+            case 'radio':
+                return(
+                    <p>
+                        <label style={{fontWeight:700}}>
+                                {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                        </label>    
+                        <br/>
+                        {radioValues.map((it, idx) =>
+                            <label>
+                                <input 
+                                    key={(it.value?it.value:it) + idx}
+                                    type={fld.type}
+                                    value={it.value?it.value:it} 
+                                    name={fld.name} 
+                                    required={required}
+                                    disabled={disabled}
+                                    checked={value[fld.name]?(value[fld.name] === (it.value?it.value:it)):undefined}
+                                    onChange={handleChangeWithPre}
+                                />
+                                &nbsp;<span>{it.label?it.label:it}</span>&nbsp;
+                            </label>
+                        )}
+                    </p> 
+                )
+                case 'select':
+                    return(
+                            <p>      
+                            <label style={labelStyle}>
+                                    {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                            </label>    
+                            <br/>
+                            <select 
+                                key={key}
+                                name={fld.name} 
+                                value={value[fld.name]?value[fld.name]:''} 
+                                required={required} 
+                                disabled={disabled}
+                                onChange={handleChange}
+                            >
+                                <option selected disabled value={""}>Välj</option>
+                                {selectValues.map(val => <option value={val}>{val}</option>)}
+                            </select>
+                        </p>
+                    )
+                case 'textarea':
+                return(
+                    <p>
+                        {label?
+                            <>
+                            <label style={labelStyle}>
+                                    {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                            </label>    
+                            <br/>
+                            </>
+                        :null}    
+                        <textarea 
+                            style={styles.textarea}
+                            key={key}
+                            rows={fld.rows?fld.rows:5} 
+                            cols={fld.cols?fld.cols:40} 
+                            maxlength={fld.maxlength}
+                            name={fld.name} 
+                            value={value[fld.name]?value[fld.name]:''} 
+                            disabled={disabled}
+                            onChange={handleChange}
+                            onKeyPress={handleKeyPress}
+                            autoFocus={fld.autoFocus}
+                        />
+                    </p>
+                    )    
+                case 'TextArea':
+                    return(
+                        <p>
+                            <label style={labelStyle}>
+                                    {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                            </label>    
+                            <br/>
+                            <TextArea
+                                style={styles.textarea}
+                                placeholder=''
+                                name={fld.name}
+                                value={value[fld.name]?value[fld.name]:''} 
+                                variant="default"
+                                borderRadius="medium"
+                                cols={fld.cols?fld.cols:40} 
+                                minRows={fld.minRows?fld.minRows:5}
+                                maxRows={fld.maxRows?fld.maxRows:400}
+                                maxlength={fld.maxlength}
+                                fixedSize={true}
+                                AutoGrow={true}
+                                onChange={handleChange}
+                                disabled={disabled}
+                                addClass="myTextareaClass"
+                                autoFocus={fld.autoFocus}
+                                />
+                        </p>
+                        )    
+                case 'rte':
+                    return(
+                        <p>
+                            <label style={labelStyle}>
+                                    {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                            </label>    
+                            <br/>
+                            <RteEditor 
+                                        value={value[fld.name]?value[fld.name]:''} 
+                                        name={fld.name} 
+                                        style={{cols:50}} 
+                                        required={required} 
+                                        disabled={disabled}
+                                        onChange={val => handleChangeRte(fld.name, val)} 
+                            />
+                        </p>
+                        )    
+                
+                    case DRAFT_EDITOR:
+                        const onEditorStateChange = val => {
+                            const html = draftToHtml(convertToRaw(val.getCurrentContent()))
+                            setEditorState(val)
+                            setValue({...value, [draftName]:val, [fld.name]:html})
+                        }    
+                        return (
+                            <p className='content'>
+                                <label style={labelStyle}>
+                                        {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                                </label>    
+                                <br/>
+                                <DraftEditor 
+                                    style={{cols:50}} 
+                                    required={required} 
+                                    disabled={disabled}
+                                    placeholder={fld.placeholder}
+                                    editorState={editorState} 
+                                    onEditorStateChange={onEditorStateChange} 
+                                />
+                            </p>
+                        )    
+                    case 'date':
+                        return(
+                            <p>
+                                <label style={labelStyle}>
+                                        {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                                </label>    
+                                <br/>
+                                <input 
+                                    key={key}
+                                    {...fld} 
+                                    type={fld.type} 
+                                    size={40}
+                                    value={value[fld.name]}
+                                    name={fld.name}
+                                    style={valueStyle} 
+                                    required={required}
+                                    disabled={disabled}
+                                    defaultValue={fld.useDefaultDate?defaultDate():undefined} 
+                                    onChange={handleChangeDate} 
+                                />
+                            </p>
+                        )    
+                case 'number':
+                    return(
+                        <p>
+                            <label style={labelStyle}>
+                                    {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                            </label>    
+                            <br/>
+                            <input 
+                                type={fld.type}
+                                min={0}
+                                max={fld.max}
+                                step={fld.step}
+                                style={styles.textarea}
+                                key={key}
+                                name={fld.name} 
+                                value={value[fld.name]?value[fld.name]:''} 
+                                disabled={disabled}
+                                onChange={handleChange}
+                                onKeyPress={handleKeyPress}
+                                autoFocus={fld.autoFocus}
+                            />
+                            {fld.txtName?value[fld.txtName]?<span>&nbsp;{'('+value[fld.txtName]+')'}</span>:null:null}
+                        </p>
+                    )    
+                case 'comment':
+                    return(
+                        <p>
+                                <label style={labelStyle}>
+                                        {label}
+                                </label>    
+                                <br/>
+                                {value[fld.name]?value[fld.name]:''}
+                        </p>
+                    )    
+                case 'html':
+                        return(
+                            <p>
+                                    <label style={labelStyle}>
+                                            {label}
+                                    </label>    
+                                    <br/>
+                                    {value[fld.name]?<div dangerouslySetInnerHTML={{__html: value[fld.name]}} />:''}
+                            </p>
+                        )    
+                default:
+            return(
+                <p>
+                    <label style={labelStyle} >
+                            {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
+                    </label>    
+                    <br/>
+                    <input 
+                        {...fld} 
+                        key={key}
+                        type={fld.type}
+                        size={40}
+                        name={fld.name} style={valueStyle} 
+                        value={value[fld.name]?value[fld.name]:''} 
+                        required={required} 
+                        disabled={disabled}
+                        maxlength={fld.maxlength}
+                        onChange={handleChange}
+                        onKeyPress={handleKeyPress}
+                        ref={fld.inputRef?fld.inputRef:undefined}
+                        autoFocus={fld.autoFocus}
+                    />
+                </p>
+            )   
+        }   
+}    
+
+const FormField1 = props => {
+    const {fld, key, value, setValue, handleKeyPress} = props
     const radioValues = fld.radioValues?fld.radioValues.map(it=>it.trim()):[]
     const selectValues = fld.selectValues?fld.selectValues.map(it=>it.trim()):[]
     const label = fld.label?fld.label:'No label'
     const handleChange = e => {
         setValue({...value, [e.target.name]:e.target.type==='checkbox'?e.target.checked?1:0:e.target.value})
     }    
+    const handleChangeRte = (fld, val) => setValue({...value, [fld]:val})
+    const handleChangeDate = e => {
+        setValue({...value, [e.target.name]:e.target.value < 8?defaultDate():e.target.value});
+    }    
     const required = fld.required?true:false 
     const disabled = fld.disabledFunc?fld.disabledFunc(value):false
     const labelStyle={fontWeight:700, ...props.labelStyle?props.labelStyle:{}}
+    const supStyle = {color:'red', fontWeight:700, ...props.subStyle?props.subStyle:{}}
     const valueStyle = props.valueStyle?props.valueStyle:{}
-    const draftName = 'draft_' + fld.name 
 
     return(
     <p>
@@ -40,269 +356,6 @@ const FormField1 = props => {
     )
 }
 
-// FormField 
-const FormField = props => {
-    const {fld, value, setValue, handleKeyPress} = props
-    const radioValues = fld.radioValues
-    const selectValues = fld.selectValues?fld.selectValues.map(it=>it.trim()):[]
-    const label = fld.label?fld.label:'No label'
-    const minLength = fld.minLength
-    const maxLength = fld.maxLength
-    const required = fld.required?true:false 
-    const supStyle = {color:'red', fontWeight:700, ...props.subStyle?props.subStyle:{}}
-    const valueStyle = props.valueStyle?props.valueStyle:{}
-    const disabled = fld.disabled?fld.disabled:fld.disabledFunc?fld.disabledFunc(value):false
-    const labelStyle={fontWeight:700, ...props.labelStyle?props.labelStyle:{}, opacity:disabled?0.4:1.0}
-
-    const handleChange = e => {
-        setValue({...value, [e.target.name]:e.target.type==='checkbox'?e.target.checked?1:0:e.target.value})
-    }    
-    const handleChangeRte = val => setValue({...value, [fld.name]:val})
-
-    const isObjectArray = fld.type === 'radio' && Array.isArray(fld.radioValues)
-
-    useEffect(()=>{
-        if (fld.type === 'draft') {
-            const draftFieldName = 'draft_' + fld.name;
-            if (value[fld.name] && !value[draftFieldName]) {
-                alert('The variable value[' + draftFieldName + '] must be initialized with function enhanceValueWithDraftVariables()')
-            }    
-        }    
-    }, []);
-    
-    const onEditorStateChange = val => {
-        const draftName='draft_' + fld.name
-        const html = draftToHtml(convertToRaw(val.getCurrentContent()))
-        setValue({...value, [draftName]:val, [fld.name]:html})
-    }    
-    const handleChangeDate = e => {
-        setValue({...value, [e.target.name]:e.target.value});
-    }    
-
-
-    switch (fld.type) {
-        case 'checkbox':
-                return(
-                    <p>  
-                        <label style={labelStyle}>
-                        <input 
-                            key={fld.name}
-                            size={200} 
-                            type={fld.type} 
-                            checked={value[fld.name]?true:false} 
-                            name={fld.name} 
-                            style={valueStyle}  
-                            required={required} 
-                            ref={fld.ref}
-                            disabled={disabled}
-                            onChange={handleChange}
-                        />
-                        &nbsp;<span style={valueStyle}>{label}</span>&nbsp;&nbsp;&nbsp;&nbsp;{required?<sup style={supStyle}>*</sup>:null}
-                        </label> 
-                    </p>
-                )
-        case 'checkboxes':
-            return(
-                <p>
-                        <label style={labelStyle}>
-                            {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                        </label>    
-                    <br/>
-                    {fld.names?fld.names.map(name =>
-                        <label>
-                            {name}&nbsp;
-                            <input 
-                                key={fld.name}
-                                type={'checkbox'} 
-                                name={name} 
-                                checked={value[fld.name]?true:false} 
-                                required={required} 
-                                disabled={disabled}
-                                onChange={handleChange}
-                            />
-                        </label>
-                    ):null}
-                </p> 
-            )
-        case 'radio':
-            return(
-                <p>
-                    <label style={{fontWeight:700}}>
-                            {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                    </label>    
-                    <br/>
-                    {radioValues?radioValues.map((radio, idx) =>
-                        <label>
-                            <input 
-                                key={fld.name + idx}
-                                type={fld.type}
-                                value={radio.value?radio.value:radio} 
-                                name={fld.name} 
-                                required={required}
-                                disabled={disabled}
-                                checked={value[fld.name] === (radio.value?radio.value:radio)}
-                                onChange={handleChange}
-                            />
-                            &nbsp;<span>{radio.label?radio.label:radio}</span>&nbsp;
-                        </label>
-                        )
-                    :
-                        <h1>No radio values</h1>
-                    }
-                </p> 
-            )
-            case '0':
-                return(
-                        <p>      
-                        <label style={labelStyle}>
-                                {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                        </label>    
-                        <br/>
-                        <select 
-                            key={fld.name}
-                            name={fld.name} 
-                            value={value[fld.name]?value[fld.name]:''} 
-                            required={required} 
-                            disabled={disabled}
-                            onChange={handleChange}
-                        >
-                            <option defaultValue disabled value={""}>Välj</option>
-                            {selectValues.map(val => <option value={val}>{val}</option>)}
-                        </select>
-                    </p>
-                )
-            case 'textarea':
-            return(
-                <p>
-                    <label style={labelStyle}>
-                        {label}
-                        &nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                    </label>    
-                    <br/>
-                    <textarea 
-                        style={styles.textarea}
-                        key={fld.name}
-                        rows={5} 
-                        cols={fld.cols?fld.cols:40} 
-                        name={fld.name} 
-                        value={value[fld.name]?value[fld.name]:''} 
-                        disabled={disabled}
-                        onChange={handleChange}
-                        minLength={minLength}
-                        maxLength={maxLength}
-                        onKeyPress={handleKeyPress}
-                    />
-                </p>
-                )    
-            case 'rte':
-                return(
-                    <p className='content'>
-                        <label style={labelStyle}>
-                                {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                        </label>    
-                        <br/>
-                        <RteEditor 
-                                    value={value[fld.name]?value[fld.name]:''} 
-                                    style={{cols:50}} 
-                                    required={required} 
-                                    disabled={disabled}
-                                    maxLength={maxLength}
-                                    onChange={val => handleChangeRte(val)} 
-                        />
-                    </p>
-                    )    
-            
-            case 'draft':
-                        return(
-                            <p className='content'>
-                                <label style={labelStyle}>
-                                        {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                                </label>    
-                                <br/>
-                                <DraftEditor 
-                                            
-                                            style={{cols:50}} 
-                                            required={required} 
-                                            disabled={disabled}
-                                            placeholder={fld.placeholder}
-                                            editorState={value['draft_' + fld.name]?value['draft_' + fld.name]:''} 
-                                            maxLength={maxLength}
-                                            onEditorStateChange={val => onEditorStateChange(val)} 
-                                />
-                            </p>
-                            )    
-            case 'date':
-                    return(
-                    <p>
-                        <label style={labelStyle}>
-                            {label}
-                            &nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                        </label>    
-                        <br/>
-                        <input 
-                            key={fld.name}
-                            {...fld} 
-                            type={fld.type} 
-                            size={40}
-                            value={value[fld.name]}
-                            name={fld.name}
-                            style={valueStyle} 
-                            required={required}
-                            disabled={disabled}
-                            onChange={handleChangeDate} 
-                        />
-                    </p>
-                )    
-            case 'comment':
-                    return(
-                        <p>
-                                <label style={labelStyle}>
-                                        {label}
-                                </label>    
-                                <br/>
-                                {value[fld.name]?value[fld.name]:''}
-                        </p>
-                    )    
-            case 'html':
-                    return(
-                        <p>
-                                <label style={labelStyle}>
-                                        {label}
-                                </label>    
-                                <br/>
-                                {value[fld.name]?<div dangerouslySetInnerHTML={{__html: value[fld.name]}} />:''}
-                        </p>
-                    )    
-            default:
-        return(
-            <p>
-                <label style={labelStyle} >
-                        {label}&nbsp;{required?<sup style={supStyle}>*</sup>:null}&nbsp;
-                </label>    
-                <br/>
-                <input 
-                    {...fld} 
-                    size={fld.type==='text'?30:undefined}
-                    key={fld.name}
-                    style={valueStyle} 
-                    value={value[fld.name]?value[fld.name]:''} 
-                    minLength={minLength}
-                    maxLength={maxLength}
-                    minlength={minLength}
-                    maxlength={maxLength}
-                    required={required} 
-                    disabled={disabled}
-                    placeholder={fld.placeholder}
-                    onChange={handleChange}
-                    onKeyPress={handleKeyPress}
-                    ref={fld.inputRef?fld.inputRef:undefined}
-                />
-            </p>
-        )   
-    }   
-}    
-
-
 export default FormField
 
 /*
@@ -312,4 +365,5 @@ export const RenderField1 = ({fld, value, setValue}) => {
         <input {...fld} type={fld.type} size={40} value={value[fld.name]?value[fld.name]:''} name={fld.name} style={style} required={fld.required} onChange={handleChange} />
     )
 }
+
 */

@@ -25,6 +25,11 @@ export const dropdownListCourse = [
         link:'/courseSchema',
         title:'Course schema with registration buttons to the different courses'
     },
+    {
+        label:'List registrations',
+        link:'/listCourseRegistrations',
+        title:'List the registrations to the the courses'
+    },
 ]
 
 export const dropdownListFestival = [
@@ -44,28 +49,26 @@ export const dropdownListFestival = [
         title:'Create festival template and release it to production'
     },
     {
-        label:'Modify a registration',
+        label:'Create festival registration',
+        link:'/FestivalSchema',
+        title:'Create a registration (same as used by users)'
+    },
+    {
+        label:'Modify festival registration',
         link:'/festivalChangeRegistration',
         title:'Change a registration',
         hasDivider:true
     },
     {
-        label:'Create a registration',
-        link:'/festivalCreateRegistration',
+        label:'List festival registrations',
+        link:'/listFestivalRegistrations',
         title:'Create a registration (same as used by users)'
     },
-    /*
     {
-        label:'List active workshops',
-        link:'/table/tbl_workshop',
-        title:'Edit the workshop table (defined by Create template)'  
+        label:'List workshops and packages',
+        link:'/listFestivalRegistrationWorkshops',
+        title:'Create a registration (same as used by users)'
     },
-    {
-        label:'List active packages',
-        link:'/table/tbl_package',
-        title:'Edit the package table (defined by Create template)'  
-    },
-    */
 ]
 
 const publicDir = apiBaseUrl + '/public/images'
@@ -99,12 +102,17 @@ export const dropdownListPhoto = [
 
 export const dropdownListOther = [
     {
-        label:'Text',
-        link:'/text',
+        label:'All texts',
+        link:'/textAll',
         title:'Edit all the texts on the web-pages'  
     },
     {
-        label:'Homepage Menu',
+        label:'Mail texts',
+        link:'/mailText',
+        title:'Edit the text that is sent to course leader and registrant'  
+    },
+    {
+        label:'Example on Homepage Menu',
         link:'/menu',
         title:'The menu shown on first page'  
     },

@@ -1,11 +1,9 @@
-import {useState} from 'react'
-import Picklist, {PicklistGroupBy} from '../components/Picklist'
+import {useState, useEffect} from 'react'
+import {PicklistButtonGroups} from '../components/Picklist'
 import Select from '../components/Select'
-import {Button, IconButton} from '@mui/material';
+import {CircularProgress, IconButton} from '@mui/material';
 import SaveIcon from '@mui/icons-material/SaveOutlined'
 import SaveAsIcon from '@mui/icons-material/SaveAsOutlined';
-import AddIcon from '@mui/icons-material/Add'
-import CopyIcon from '@mui/icons-material/ContentCopy'
 import MoveUpIcon from '@mui/icons-material/MoveUp';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
@@ -13,6 +11,7 @@ import Tooltip from '@mui/material/Tooltip';
 import EditTableWithSelect from '../components/EditTableWithSelect';
 import { serverPost } from '../services/serverPost';
 import { serverFetchData } from '../services/serverFetch';
+import {uniqueObjectList} from "../services/functions"
 import StatusMessage from '../components/StatusMessage';
 import {STATUS_STYLE} from '../services/constant'
 
@@ -218,6 +217,8 @@ const Column = ({noLabel, col, value, setValue}) => {
     )    
 }
 
+const tableName = 'tbl_event_template'
+
 export default () =>
 {
     const [templateName, setTemplateName] = useState()
@@ -226,6 +227,28 @@ export default () =>
     const [packages, setPackages] = useState([])
     const [status, setStatus] = useState({})
     const [reloadCounter, setReloadCounter] = useState(0)
+    const [groups, setGroups] = useState()
+
+    const sortFunc = (a,b)=>a.startDate.substring(0,4).localeCompare(b.startDate.substring(0,4))
+
+    const handleReply = reply => {
+        const data = reply.data?reply.data:reply
+        if (data.status === 'OK' || data.status === 'true' || data.status) {
+            const labelName = 'templateName'
+            const list = uniqueObjectList(data.result, labelName).sort(sortFunc)
+            const groups = Object.groupBy(list, it=>it.startDate.substring(0,4))
+            setGroups(groups)
+        } else {
+            alert('ERROR: Call to get data for picklist failed. Message:' + data.message?data.message:'')
+        }
+    }    
+
+    useEffect(()=>{
+            const url = '/fetchRows?tableName=' + tableName
+            serverFetchData(url, handleReply)
+    }, [reloadCounter])
+
+
 
     const handleDefaultReply = data => {
         const dt = new Date().toLocaleString()
@@ -454,19 +477,17 @@ export default () =>
 
     return(
         <div style={{position:'relative'}}>
-            <PicklistGroupBy 
+            <PicklistButtonGroups 
+                groups={groups}
                 labelButton='Template' 
-                tableName='tbl_event_template' 
                 labelName='templateName' 
                 valueName='templateName' 
-                groupBy='eventType'
                 value={templateName} 
-                handleClick={handleFetchTemplate} unique={true} 
+                handleClick={handleFetchTemplate} 
                 close={true} // Close after pick
-                reloadCounter={reloadCounter}
             />
             {templateName?
-                <div className="columns is-centered">
+                <div className="columns is-centered" style={{paddingTop:20}}>
                     <div className='is-size-3'>{templateName}</div>
                 </div>
             :null}    
@@ -530,7 +551,7 @@ export default () =>
                     </IconButton>    
                     </Tooltip>    
                 </>
-            :null}
+            :<CircularProgress />}
             <StatusMessage status={status} />
         </div>
     )

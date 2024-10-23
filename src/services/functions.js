@@ -39,6 +39,8 @@ export const replaceChar = (origString, replaceChar, index) => {
     return newString;
 }
 
+export const dow = dt => (Date(dt).getDay() + 13)%7 + 1
+
 export const isEmail = value => {
     var validRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     return value.toLowerCase().match(validRegex)?true:false 
@@ -101,7 +103,7 @@ export const getType = p => {
 
 export const isNormalVariable = p => {
     const type = getType(p)
-    // return (type === 'string' || type === 'number' || type==='other')
+    // return (['string','number','varchar',  'other'].inckl)
     return true
 }
     
@@ -187,6 +189,49 @@ export function calcAmount(packages, workshops, currency) {
         return amount
     }
 }
+
+/**
+ * Determine the mobile operating system.
+ * This function returns one of 'iOS', 'Android', 'Windows Phone', or 'unknown'.
+ *
+ * @returns {String}
+ */
+export function getMobileOperatingSystem() {
+    var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+    // Windows Phone must come first because its UA also contains "Android"
+    if (/windows phone/i.test(userAgent)) {
+        return "Windows Phone";
+    }
+
+    if (/android/i.test(userAgent)) {
+        return "Android";
+    }
+
+    // iOS detection from: http://stackoverflow.com/a/9039885/177710
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        return "iOS";
+    }
+
+    return "unknown";
+}
+
+export function isAndroidOperatingSystem() {
+    var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    if (/android/i.test(userAgent)) {
+        return true
+    } else {
+        return false
+    }
+}
+
+export const defaultDate = () =>{
+    const today = new Date();
+    const date = today.setDate(today.getDate()); 
+    const defaultValue = new Date(date).toISOString().split('T')[0] // yyyy-mm-dd
+    return defaultValue
+} 
+
 
     
 

@@ -2,7 +2,7 @@ import {useState, useEffect} from "react"
 import { useLocation } from 'react-router-dom';
 import {serverFetchData} from '../services/serverFetch'
 import HtmlView from '../components/HtmlView'
-import {compareFunc} from '../components/EditText' 
+import {compareTextFunc} from '../components/EditText' 
 import {useSharedState} from '../store'
 const DEFAULT_PROPS = {
     groupId:'Course',
@@ -19,7 +19,7 @@ export default props => {
     const handleReply = reply => {
         const data = reply.data?reply.data:reply
         if (data.status === 'OK') {
-            const currentList = data.result.sort(compareFunc)
+            const currentList = data.result.sort(compareTextFunc)
             setList(currentList)
         } else {
             alert('ERROR: Failed to fetch text')

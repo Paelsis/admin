@@ -51,7 +51,7 @@ const _ViewTable = props => {
     const {depth, groupByArr, list, setList} = props
     const [edit, setEdit] = useState()
     const groupByItem = groupByArr[depth]
-    const columns = groupByItem.columns
+    const cols = groupByItem.columns
 
     const buttons = [
         {
@@ -65,7 +65,7 @@ const _ViewTable = props => {
     ]
 
     return(
-            <ViewTable tableName={'tbl_course_def'} edit={edit} columns={columns} list={list} setList={setList} buttons={buttons} />
+            <ViewTable tableName={'tbl_course_def'} edit={edit} cols={cols} list={list} setList={setList} buttons={buttons} />
     )
 }
 

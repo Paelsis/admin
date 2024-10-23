@@ -25,7 +25,7 @@ const styles = {
 const FestivalChangeRegistration =  () => {
     const [sharedState, ] = useSharedState()
     const language = sharedState.language
-    const [registrations, setRegistrations] = useState()
+    const [groups, setGroups] = useState()
     const [registration, setRegistration] = useState()
     const [schedules, setSchedules] = useState()
     const [packages, setPackages] = useState()
@@ -34,18 +34,15 @@ const FestivalChangeRegistration =  () => {
     const [checkedWorkshops, setCheckedWorkshops] = useState()
     const [toggleMore, setToggleMore] = useState()
     const [status, setStatus] = useState()
+    const [reloadCounter, setReloadCounter] = useState(0)
 
-    const [templateName, setTemplateName] = useState()
-    const [eventType, setEventType] = useState()
-    const [year, setYear] = useState()
-
-    const [email, setEmail] = useState()
-    const [role, setRole] = useState()
 
     const handleReplyFetchPicklist = reply => {
         const data = reply.data?reply.data:reply
         if (data.status === 'OK') {
-            setRegistrations(data.result.map(it=>({...it, label:it.firstName + ' ' + it.lastName + ' ' + it.email})))
+            let registrations = data.result.map(it=>({...it, label:it.firstName + ' ' + it.lastName + ' ' + it.email}))
+            const groups = Object.groupBy(registrations, it=>it.eventType + ' ' + it.year)
+            setGroups(groups)
         } else {
             alert('ERROR: Status:' + data.status + ' Message:' +  data.message)
         }   
@@ -53,10 +50,7 @@ const FestivalChangeRegistration =  () => {
 
     useEffect(()=>{
         serverFetchData('/fetchFestivalRegistrationPicklist', handleReplyFetchPicklist) 
-    }, [])
-
-    const groups = registrations?Object.groupBy(registrations, it=>it.eventType + ' ' + it.year):undefined
-    const keys = groups?Object.keys(groups):undefined
+    }, [reloadCounter])
 
     const renderOutput = () => {
        
@@ -64,6 +58,7 @@ const FestivalChangeRegistration =  () => {
             const data = reply.data?reply.data:reply
             if (data.status === 'OK') {
                 const orderId = registration?registration.orderId?registration.orderId:9999999:8888888
+                setReloadCounter(reloadCounter+1)
                 setStatus('OK')
                 setTimeout(()=>setStatus(undefined), 2000)
                 // alert("Modified registration successfully. Order id =" + orderId)
@@ -82,7 +77,7 @@ const FestivalChangeRegistration =  () => {
             if (registration.eventType && registration.dateRange && registration.year) {
                 const data = {
                     id:registration.id, 
-                    registration:{...registration, id:undefined, templateName}, 
+                    registration:{...registration, id:undefined}, 
                     workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))},
                     packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))}
                 }
@@ -154,25 +149,25 @@ const FestivalChangeRegistration =  () => {
                 {packages?
                 <>
                     <h1>PACKAGES</h1>
-                    <ViewTable cols={['name', 'productId', 'checked']} list={packages} />
+                    <ViewTable colsView={['name', 'productId', 'checked']} list={packages} setList={setPackages} />
                 </>
                 :null}
                 {checkedPackages?
                     <>
                         <h1>CHECKED PACKAGES</h1>
-                        <ViewTable cols={['name', 'productId']} list={checkedPackages} />
+                        <ViewTable colsView={['name', 'productId']} list={checkedPackages} setList={setCheckedPackages} />
                     </>
                 :null}
                 {workshops?
                     <>
                         <h1>WORKSHOPS</h1>
-                        <ViewTable cols={['name', 'productId', 'checked', 'startDate', 'dayOfWeek']} list={workshops} />
+                        <ViewTable colsView={['name', 'productId', 'checked', 'startDate', 'dayOfWeek']} list={workshops} setList={setWorkshops} />
                     </>
                 :null}
                 {checkedWorkshops?
                 <>
                     <h1>CHECKED WORKSHOPS</h1>
-                    <ViewTable cols={['name', 'productId']} list={checkedWorkshops} />
+                    <ViewTable colsView={['name', 'productId']} list={checkedWorkshops} setList={setCheckedWorkshops} />
                 </>
                 :null}
             </div>
@@ -230,7 +225,7 @@ const FestivalChangeRegistration =  () => {
             <div className='columns is-centered' >
                 {groups? 
                 <div className='column'>
-                    {keys.map(key=>
+                    {Object.keys(groups).map(key=>
                         <>
                             <Picklist 
                                 labelButton={key}

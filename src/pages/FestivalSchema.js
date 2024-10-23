@@ -13,16 +13,33 @@ import FormTemplate from '../components/FormTemplate'
 import {ChecklistPackage, ChecklistWorkshop} from '../components/Checklist'
 import {TEXT, registrationFields} from '../services/text'
 import {calcAmount} from '../services/functions'
-
+import { useNavigate }  from 'react-router-dom';
+import {PRODUCTION, DEVELOPMENT} from '../services/constant'
 
 const styles = {
     button:{},
     buttonOK:{color:'white', backgroundColor:'green', borderColor:'green'},
     buttonERROR:{color:'white', backgroundColor:'red', borderColor:'red'}
 }
-    
 
-const FestivalRegistration =  () => {
+const initialReg = {
+    role:'LEADER',
+    leader:true,
+    firstName:'Per',
+    lastName:'Eskilson',
+    email:'paelsis@hotmail.com',
+    address:'Skomakaregatan 10A, Malmö',
+    havePartner:true,
+    payForPartner:true,
+    phone:'0733-780749',
+    firstNamePartner:'Greta',
+    lastNamePartner:'Thunberg',
+    emailPartner:'greta@thunberg.com'
+}
+
+    
+// FestivalSchema
+export default () => {
     const [sharedState, ] = useSharedState()
     const language = sharedState.language
     const [schedules, setSchedules] = useState()
@@ -30,9 +47,12 @@ const FestivalRegistration =  () => {
     const [workshops, setWorkshops] = useState()
     const [status, setStatus] = useState(false)
     const [events, setEvents] = useState()
-    const [registration, setRegistration] = useState({})
+    const [mailSubject, setMailSubject] = useState()
+    const [mailBody, setMailBody] = useState()
+    const [registration, setRegistration] = useState(DEVELOPMENT?initialReg:{})
     const groups = events?Object.groupBy(events, it=>(it.eventType + ' ' + it.year)):undefined
     const keys = groups?Object.keys(groups):undefined
+    const navigate = useNavigate()
 
     const handleReplyFetchEvents = reply => {
         const data = reply.data?reply.data:reply
@@ -48,37 +68,74 @@ const FestivalRegistration =  () => {
     }, [])
 
     const renderOutput = () => {
+    
+        const handleSendMailReply = (mailReply, mailInputData) => {
+            if (mailReply.status === 'OK') {
+                alert(TEXT.success[language] + '\norderId =' + mailInputData.orderId)
+                navigate('/')
+            } else {
+                const strMailInputData = JSON.stringify(mailInputData)
+                alert(TEXT.successNoMail[language] + '.\nThe mail input is:' + strMailInputData)
+                //navigate('/festivalSchema')
+            }
+        }
 
-        const handleReplyUpdate = reply => {
-            const data = reply.data?reply.data:reply
-            if (data.status === 'OK') {
-                const orderId = data.orderId?data.orderId:99999999
-                const id = data.id?data.id:999999999
-                // alert('Insert of new registration successful status=' + data.status + ' orderId=' + orderId + ' id=' + id)
+        const handleInsertReply = regReply => {
+            if (regReply.status === 'OK') {
+                const orderId = regReply.orderId?regReply.orderId:99999999
+                const id = regReply.id?regReply.id:999999999
+                const email = registration.email?registration.email:'No email'
+                const emailResponsible = schedules?schedules[0].emailResponsible:'paelsis@hotmail.com'
+
+                // alert('Insert of new registration successful status=' + regReply.status + ' orderId=' + orderId + ' id=' + id)
                 setStatus('OK')
                 setTimeout(()=>setStatus(undefined), 2000)
-            } else if (data.status === 'ERROR') {
+                alert('You registration was successful with order number ' + (regReply.orderId?regReply.orderId:'Unknown') + ' Please check your mailbox for confirmation mail.')
+    
+                // Data needed to send reply mail to customer and responsible organizer
+                const mailData = {
+                    orderId, 
+                    id, 
+                    email,
+                    emailResponsible,
+                    mailSubjectToCustomer:regReply.mailSubject, 
+                    mailBodyToCustomer:regReply.mailBody,  
+                    mailSubjectToCourseLeader:regReply.mailSubject, 
+                    mailBodyToCourseLeader:regReply.mailBody,  
+                }
+
+                if (DEVELOPMENT) {
+                    alert('data:' + JSON.stringify('mailData:' + JSON.stringify(mailData)))
+                } else {
+                    // alert("Data sent to SMTP-server:" + JSON.stringify(mailData))
+                    serverPost('/sendMailReg', mailData, reply=>handleSendMailReply(reply, mailData))
+                }    
+               
+            } else if (regReply.status === 'ERROR') {
                 setStatus('ERROR')
                 setTimeout(()=>setStatus(undefined), 2000)
-                alert('ERROR: status=' + data.status + ' message=' +  (data.message?data.message:'No message'))
+                alert(TEXT.error[language])
             } else {
                 setStatus('ERROR')
                 setTimeout(()=>setStatus(undefined), 2000)
-                alert('ERROR: Problems with response, data:' + JSON.stringify(data))
+                alert('ERROR: Problems with response, data:' + JSON.stringify(regReply))
             }   
         }
     
-        const handleUpdate = () => {
+        const handleInsert = () => {
             const eventType = schedules?schedules[0].eventType:undefined
             const dateRange = schedules?schedules[0].dateRange:undefined 
             const year = schedules?schedules[0].year:undefined
-    
+            const emailResponsible = schedules?schedules[0].emailResponsible:'paelsis@hotmail.com'
+
             const data = {
-                registration:{...registration, id:undefined, eventType, dateRange, year}, 
-                workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))},
-                packages:{...packages.filter(it=>it.checked).map(it=>({...it, email:registration.email, role:registration.role, id:undefined}))}
+                // Note that ide must be undefined to insert the record, otherwise it updates the id since it is primary index
+                registration:{...registration, eventType, dateRange, year, emailResponsible, id:undefined}, 
+                workshops:{...workshops.filter(it=>it.checked).map(it=>({...it, product:it.workshopId, ...registration, id:undefined}))},
+                packages:{...packages.filter(it=>it.checked).map(it=>({...it, product:it.packageId, ...registration, id:undefined}))}
             } 
-            serverPost('/updateFestivalRegistration', data, handleReplyUpdate)
+            // Note that update with id undefined will insert record
+            serverPost('/updateFestivalRegistration', data, handleInsertReply)
         }
 
         const buttons= [
@@ -106,7 +163,7 @@ const FestivalRegistration =  () => {
 
         return(
             <div className='columns is-centered'>
-                <div className='column is-4'>
+                <div className='column is-6'>
                     {schedules.length >0?
                         <>
                             <h1 className="title is-3">{eventType + ' ' + year}</h1>
@@ -114,7 +171,7 @@ const FestivalRegistration =  () => {
                                 fields = {registrationFields(language)} 
                                 value={registration?registration:{}} 
                                 setValue={setRegistration} buttons={buttons}
-                                handleSubmit={e=>{e.preventDefault(); handleUpdate()}}
+                                handleSubmit={e=>{e.preventDefault(); handleInsert()}}
                             >
                                 <>
                                     <h5 className='title is-5'>Price:{amount}</h5>
@@ -174,9 +231,7 @@ const FestivalRegistration =  () => {
             </div>
 
             {schedules?
-                <>
-                    {renderOutput()}
-                </>
+                renderOutput()
             :
                 null
             }    
@@ -185,4 +240,3 @@ const FestivalRegistration =  () => {
     )
 }    
 
-export default FestivalRegistration;

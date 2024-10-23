@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {addRow, replaceRow, deleteRow} from '../services/serverPost'
+import {replaceRow, deleteRow} from '../services/serverPost'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import AddIcon from '@mui/icons-material/Add';
@@ -7,12 +7,16 @@ import EmailIcon from '@mui/icons-material/Email'
 import SearchIcon from '@mui/icons-material/Search'
 import SaveIcon from '@mui/icons-material/Save'
 import CancelIcon from '@mui/icons-material/Cancel'
-import CameraIcon from '@mui/icons-material/Camera'
+import CircularProgress from '@mui/material/CircularProgress';
 import { Tooltip, IconButton, Button} from '@mui/material';
 import { cyan, red } from '@mui/material/colors';
 import { STATUS_STYLE } from '../services/constant';
-import StatusMessage from './StatusMessage';
 import ReactRte from 'react-rte';
+import EditRecord from './EditRecord'
+import {serverFetchData} from '../services/serverFetch'
+
+
+const FAILED_REPLY = {status:'ERROR', message:'FAILED: No reply to db'}
 
 const TEXTAREA_FIELDS=['textBody']
 
@@ -59,73 +63,12 @@ const Rte = ({value, handleSave}) => {
     )
 }
 
-const _RenderEdit = ({columns, record, buttons, handleChange}) => {
-    const columnsTable = columns?columns:Object.entries(record).map(it => ({
-            Field:it[0],
-            type:'text'
-    }))
-    const filterFunc = it => (it.Field !== 'id' && it.Field.indexOf('Timestamp') === -1)
-    const columnsReduced = columnsTable.filter(filterFunc)
-    return(
-        record?
-            <table>
-                <thead>
-                    <tr>
-                        <th style={styles.th}>Name</th>
-                        <th style={styles.th}>Value</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {columnsReduced.map((col, index)=>
-                        <tr>
-                            <th style={styles.th}>
-                                {col.Field}
-                            </th>
-                            <td>
-                                {TEXTAREA_FIELDS.includes(col.Field)?
-                                    <textarea autoFocus={index==0?true:undefined} style={styles.add} rows={3} columns={50} name={col.Field} placeholder={col.Field} value = {record[col.Field]} onChange={handleChange}/>
-                                :
-                                    <input autoFocus={index==0?true:undefined} style={styles.add} type={col.type} name={col.Field} placeholder={record[col.Field]} value = {record[col.Field]} onChange={handleChange}/>
-                                }    
-                            </td>
-                        </tr>
-                    )}  
-
-                    {buttons?     
-                        <tr>
-                            <td colSpan={2}>
-                                {buttons.map(button => 
-                                    button.icon?
-                                            <Tooltip title={<h2>{button.tooltip}</h2>}>
-                                                <IconButton onClick={()=>button.onClick(button, record)}>
-                                                    {button.icon}                            
-                                                </IconButton>
-                                            </Tooltip>
-                                    :    
-                                            <Button variant={button.variant?button.variant:'outlined'} style={{color:'white'}} onClick={()=>button.onClick(record)}>{button.label?button.label:'No label'}</Button>
-                                )}    
-                            </td>
-                        </tr>
-                    :
-                        <tr>
-                            <td colSpan={2}>No buttons passed to _RenderEdit</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        :
-            <h3>No record</h3>
-    )
-
-}
-
 const maillist = (list, fld) => list.map(it => it[fld]?it[fld]:'').join(', ')
 
-const HeaderValue = ({list, fld, comment}) => 
+const HeaderValue = ({list, fld, comment, handleClick}) => 
     fld.indexOf('email')===-1?
         <Tooltip title={<h2>{comment}</h2>}>
-            <th style={styles.th} size={10} key={fld}>
+            <th style={styles.th} size={10} key={fld} onClick={handleClick}>
                 {fld}
             </th>
         </Tooltip>
@@ -154,8 +97,23 @@ const SearchValue = ({fld, search, setSearch}) => {
     )    
     }
 
-const _RenderView = ({list, columns, buttons, handleAdd, search, setSearch, filterList, setFilterList, handleFilter, handleComment}) => {
-    const keys = columns?columns.map(it=>it.Field):Object.keys(list[0])
+const _RenderView = ({list, colObjList, buttons, handleAdd, search, setSearch, filterList, setFilterList, handleFilter, handleComment}) => {
+    const [sortCol, setSortCol] = useState()
+    const [asc, setAsc] = useState(false)
+    const compareFunc = (a, b) => {
+            if (a[sortCol] && b[sortCol]) {
+                if (typeof a[sortCol] === 'string' && typeof b[sortCol] === 'string') {
+                    return a[sortCol].localeCompare(b[sortCol]) * (asc?1:-1)
+                } else {    
+                    return a[sortCol] - b[sortCol] * (asc?1:-1)
+                }    
+            } else if (a[sortCol]) {
+                return (asc?-1:1)
+            } else {
+                return (asc?1:-1)
+            }
+    }    
+    const keys = colObjList?colObjList.map(it=>it.Field):Object.keys(list[0])
     const filterFunc = key => key=='id'?false:true 
     
     const clearFilter = () => {
@@ -163,21 +121,28 @@ const _RenderView = ({list, columns, buttons, handleAdd, search, setSearch, filt
         setTimeout(()=>setFilterList(list) ,500)
     }
 
+    const sortedList = sortCol?filterList.sort(compareFunc):list
+
+    const handleClick = colName =>{
+        setSortCol(colName)
+        setAsc(!asc)
+    }
+
     return(
     <table>
         <thead>
             <tr>
-                {keys.filter(filterFunc).map(it=>
-                    <Tooltip title={handleComment(it)}>  
-                        <HeaderValue list={list} fld={it?it:'No name'} comment={handleComment(it)}/>
+                {keys.filter(filterFunc).map(colName=>
+                    <Tooltip title={handleComment(colName)}>  
+                        <HeaderValue list={list} fld={colName?colName:'No name'} handleClick={()=>handleClick(colName)} comment={handleComment(colName)}/>
                     </Tooltip>
                 )}    
                 <th colSpan={2} />
             </tr>
             {list.length > 5?
             <tr>
-                {keys.filter(filterFunc).map(it=>
-                    <SearchValue fld={it} search={search} setSearch={setSearch} />
+                {keys.filter(filterFunc).map(colName=>
+                    <SearchValue fld={colName} search={search} setSearch={setSearch} />
                 )}
                 {<th>
                     <IconButton  onClick={handleFilter} >
@@ -224,24 +189,53 @@ const _RenderView = ({list, columns, buttons, handleAdd, search, setSearch, filt
     )
 }    
 
-// EditTable
-export default ({tableName, columns, list, setList}) => {
+// EditTable (columnsFilterFunc removes columns you do not want to edit)
+export default ({tableName, columnsFilterFunc}) => {
     const [record, setRecord] = useState()
-    const [recordRte, setRecordRte] = useState()
     const [search, setSearch] = useState({})
+    const [list, setList] = useState()
+    const [colObjList, setColObjList] = useState()
     const [filterList, setFilterList] = useState()
     const [status, setStatus] = useState({})
 
+    const handleReplyFetchRows = reply => {
+        const data = reply?reply.data?reply.data:reply:FAILED_REPLY
+        if (data.status === 'OK' || data.status === 'true' || data.status) {
+            setList(data.result)
+        } else {
+            alert('ERROR: Call to get data from table ' + tableName + ' failed. Message:' + data.message?data.message:'')
+        }
+    }    
+
+    const handleReplyFetchColumns = reply => {
+        const data = reply?reply.data?reply.data:reply:FAILED_REPLY
+        if (data.status === 'OK' || data.status==='true') {
+            if (data.result.length > 0) {
+                if (columnsFilterFunc) {
+                    setColObjList(data.result.filter(columnsFilterFunc))
+                } else {
+                    setColObjList(data.result)
+                }    
+            } else {
+                alert('List of colObjList ha 0 length')
+            }
+        } else {
+            alert('ERROR: Call to get colObjList failed. Message:' + data.message?data.message:'')
+        }
+    }    
+
     useEffect(()=>{
+        serverFetchData('/getColumns?tableName=' + tableName, handleReplyFetchColumns) 
+        serverFetchData('/fetchRows?tableName=' + tableName, handleReplyFetchRows)
         setRecord(undefined)
         setFilterList(undefined)
         setSearch({})
-    },[columns, list])
+    },[tableName])
 
-    const columnsToEmptyObject = columns => {
+    const colObjListToEmptyObject = colObjList => {
         let obj = {}
-        if (columns) {
-            columns.map(col=>col.Field).filter(it=> it !== 'id' && it.indexOf('Timestamp') === -1).forEach(col=>    
+        if (colObjList) {
+            colObjList.map(col=>col.Field).filter(it=> it !== 'id' && it.indexOf('Timestamp') === -1).forEach(col=>    
             obj = {...obj, [col.Field]:''}
             )
         } else {
@@ -251,7 +245,7 @@ export default ({tableName, columns, list, setList}) => {
     }    
 
     const handleComment = key => {
-        const foundColumn = columns.map(co=>co.Field).indexOf(key)
+        const foundColumn = colObjList?colObjList.map(co=>co.Field).indexOf(key):undefined
         return foundColumn?foundColumn.Comment?foundColumn.Comment:'No help text':'No help text'
     } 
 
@@ -335,15 +329,6 @@ export default ({tableName, columns, list, setList}) => {
         replaceRow(tableName, record, handleReplaceReply)
     }
 
-
-    const handleChange = e => {
-        setRecord({...record, [e.target.name]:e.target.value})
-    }
-
-    const handleChangeRte = (key, val) => {
-        setRecordRte({...recordRte, [key]:val})
-    }
-
     const handleCancel = row => {
         setRecord(undefined)
     }
@@ -375,25 +360,7 @@ export default ({tableName, columns, list, setList}) => {
 
 
 
-    //const emptyRow = columnsToEmptyObject(columns)
-
-    const buttonsEdit = [
-        {
-            icon:<SaveIcon />,
-            tooltip:'Save row',
-            onClick:handleReplace
-        },
-        {
-            icon:<CancelIcon />,
-            tooltip:'Cancel edit',
-            onClick:row=>handleCancel(row)
-        },
-        {
-            icon:<DeleteIcon />,
-            tooltip:'Delete row',
-            onClick:row=>handleDelete(row.id)
-        },
-    ]
+    //const emptyRow = colObjListToEmptyObject(colObjList)
 
     const buttonsView = [
         {
@@ -403,26 +370,42 @@ export default ({tableName, columns, list, setList}) => {
         },
         {
             icon:<DeleteIcon />,
-            tooltip:'Delete row',
+            tooltip:'Delete row from database',
             onClick:row=>handleDelete(row.id)
         },
     ]    
+
+    const buttonsEdit = [
+        {
+            icon:<SaveIcon />,
+            tooltip:'Save row to database',
+            onClick:handleReplace
+        },
+        {
+            icon:<CancelIcon />,
+            tooltip:'Cancel edit',
+            onClick:row=>handleCancel(row)
+        },
+        {
+            icon:<DeleteIcon />,
+            tooltip:'Delete row from database',
+            onClick:row=>handleDelete(row.id)
+        },
+    ]
+
+    const colsEdit = record?Object.keys(record):undefined
   
     return(
         <div style={styles.root}>
             {record?
-                <_RenderEdit 
-                    columns={columns} 
-                    buttons={buttonsEdit}
-                    record={record} 
-                    handleChange={handleChange} 
-                    handleChangeRte={handleChangeRte} 
-                />
-            :list.length > 0?
+                <>
+                   <EditRecord cols={colsEdit} colObjList={colObjList} record={record} setRecord={setRecord} buttons={buttonsEdit} />
+                </>
+            :list?list.length > 0?
                 <>
                     <_RenderView 
                         list={list}
-                        columns={columns}
+                        colObjList={colObjList}
                         buttons={buttonsView}
                         search={search}
                         setSearch={setSearch}
@@ -433,8 +416,11 @@ export default ({tableName, columns, list, setList}) => {
                         handleComment={handleComment} 
                     />
                 </>
-            :<h1>List is empty</h1>}
-            <StatusMessage status={status} />
+            :
+                <h4 className='title is-4'>No rows in table {tableName}</h4>
+            :
+                <CircularProgress />
+            }    
         </div>
     )
 }
