@@ -132,18 +132,15 @@ const _RenderView = ({list, colObjList, buttons, handleAdd, search, setSearch, f
     <table>
         <thead>
             <tr>
+                <th colSpan={2} />
                 {keys.filter(filterFunc).map(colName=>
                     <Tooltip title={handleComment(colName)}>  
                         <HeaderValue list={list} fld={colName?colName:'No name'} handleClick={()=>handleClick(colName)} comment={handleComment(colName)}/>
                     </Tooltip>
                 )}    
-                <th colSpan={2} />
             </tr>
             {list.length > 5?
             <tr>
-                {keys.filter(filterFunc).map(colName=>
-                    <SearchValue fld={colName} search={search} setSearch={setSearch} />
-                )}
                 {<th>
                     <IconButton  onClick={handleFilter} >
                         <SearchIcon/>
@@ -154,17 +151,15 @@ const _RenderView = ({list, colObjList, buttons, handleAdd, search, setSearch, f
                         <CancelIcon />
                     </IconButton> 
                 </th>}
+                {keys.filter(filterFunc).map(colName=>
+                    <SearchValue fld={colName} search={search} setSearch={setSearch} />
+                )}
             </tr>
             :null}
         </thead>
         <tbody>
             {filterList.map(row => 
                 <tr style={styles.tr(row.active)}>
-                    {keys.filter(filterFunc).map(key=>
-                        <td style={styles.td}>
-                            <div dangerouslySetInnerHTML={{__html: row[key]}} />
-                        </td>
-                    )}       
                     {buttons.map(but=>
                         <td style={styles.td}>
                             <Tooltip title={<h2>{but.tooltip}</h2>}>
@@ -174,6 +169,11 @@ const _RenderView = ({list, colObjList, buttons, handleAdd, search, setSearch, f
                             </Tooltip>
                         </td>
                     )}    
+                    {keys.filter(filterFunc).map(key=>
+                        <td style={styles.td}>
+                            <div dangerouslySetInnerHTML={{__html: row[key]}} />
+                        </td>
+                    )}       
                 </tr>     
             )}      
                 <tr style={styles.tr(false)}>

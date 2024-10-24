@@ -17,8 +17,8 @@ const styles = {
         margin:0, 
     },
     td:{
-        fontSize:'normal',
-        padding:20
+        fontSize:16,
+        padding:0
     }
 }
 
@@ -82,7 +82,7 @@ const _View = ({list, cols, buttons})=> {
                                             </td>
                                         }    
                                     </>
-                            ):null}
+                                ):null}
                             </tr>
                         )}
                     </tbody>

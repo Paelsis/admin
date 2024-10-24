@@ -120,16 +120,16 @@ export const _ViewNote = props => {
     const style = {fontSize:'normal',padding: "12px 20px", margin: "8px 0", boxSizing: "border-box"}
 
     return (
-        <div style={{width:'100vw'}}>
+        <div style={{width:'100vw', marginTop:20}}>
             <form onSubmit={handleSubmit}>      
-                <div style={{display:'flex',  justifyContent:'flexStart' , flexDirection:'column', width:'80vw', marginLeft:50}}>
-                    <div style={{marginTop:5, marginBottom:5}}>
+                <div className="columns is-centered">
+                    <div className="column is-2">
                         <label>Course date:&nbsp;
                             <input type="date" name='courseDate' value={value.courseDate} onChange={handleChange} />
                             <p/>   
                         </label> 
                     </div>    
-                    <div style={{flex:1, flexDirection:'row'}}>
+                    <div className="column is-3">
                         <TextArea
                              type="text" 
                              autoFocus={true}
@@ -142,14 +142,16 @@ export const _ViewNote = props => {
                              onChange={handleChange}
                         /> 
                     </div>
-                    <IconButton type='submit' >
-                        <SaveIcon />
-                    </IconButton>
+                    <div className="column is-1">
+                        <IconButton type='submit' >
+                            <SaveIcon />
+                        </IconButton>
+                     </div>
+                     <div className="column is-5">
+                        <_ViewTable {...props} list={list.sort(sortFunc)} />
+                     </div>   
                 </div>
             </form>
-            <div style={{margin:'auto', width:400}}>
-                <_ViewTable {...props} list={list.sort(sortFunc)} />
-            </div>
         </div>
     )
 }
